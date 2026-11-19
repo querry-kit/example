@@ -16,9 +16,25 @@ export default defineNuxtPlugin(
    */
   () => {
     const api = createApiClient({ apiBaseUrl: useRequestURL().origin });
+    let reads = new AbortController();
+
+    /** Cancels requests made for the previous account before the server cookie is replaced. */
+    function invalidateWorkboardReads(): void {
+      reads.abort();
+      reads = new AbortController();
+    }
 
     // This example exposes `/api` on the Nuxt origin. Keep the package default for a versioned `/api/v1` API.
     api.defaults.baseURL = '/api';
+    api.interceptors.request.use(
+      /** Attaches the active account's cancellation signal to every data read. */
+      (config) => {
+        if (/^\/(?:work-items|projects|labels)(?:[/?]|$)/.test(config.url ?? '')) {
+          config.signal = reads.signal;
+        }
+        return config;
+      },
+    );
     api.interceptors.response.use(
       /** Validates each known read response by its public route, separate from TypeScript's static types. */
       (response) => {
@@ -43,6 +59,6 @@ export default defineNuxtPlugin(
       },
     );
 
-    return { provide: { workboardApi: api } };
+    return { provide: { workboardApi: api, invalidateWorkboardReads } };
   },
 );

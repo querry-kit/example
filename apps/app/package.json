@@ -6,7 +6,8 @@
     "dev": "nuxt dev --host 127.0.0.1 --port 3201",
     "build": "nuxt build",
     "typecheck": "nuxt typecheck",
-    "test:workboard": "playwright test --config playwright.config.ts workboard.spec.ts"
+    "test:workboard": "playwright test --config playwright.config.ts workboard.spec.ts",
+    "test:account-switch": "playwright test --config playwright.config.ts account-switch.spec.ts"
   },
   "dependencies": {
     "@iconify-json/lucide": "1.2.156",

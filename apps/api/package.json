@@ -10,7 +10,8 @@
     "db:migrate": "prisma migrate deploy",
     "test:database": "tsx --test test/database.integration.spec.ts",
     "test:session": "tsx --test test/session.integration.spec.ts",
-    "test:reads": "tsx --test test/reads.integration.spec.ts"
+    "test:reads": "tsx --test test/reads.integration.spec.ts",
+    "test:access": "tsx --test test/access.integration.spec.ts"
   },
   "dependencies": {
     "@casl/ability": "7.1.1",

@@ -34,7 +34,7 @@ description: "Ordered implementation tasks for the Querry Kit Workboard"
 
 **Independent check**: Compare results for all three accounts, including same-role denial and identity changes during pending requests.
 
-- [ ] T008 [US2] Add navbar switching in `apps/app/app/components/demo/AccountSwitcher.vue` and identity-keyed session/query isolation in `apps/app/app/composables/useDemoSession.ts`. Clear or invalidate stale data, requests, projections, filters and selections; explain the account boundary and document comparison examples. Gate in `apps/app/test/account-switch.spec.ts` and `apps/api/test/access.integration.spec.ts`: `admin` → `user1` and `user1` → `user2` during loading, distinct owned IDs, cross-account detail/lookup denial, forbidden query operands and positive admin fields.
+- [X] T008 [US2] Add navbar switching in `apps/app/app/components/demo/AccountSwitcher.vue` and identity-keyed session/query isolation in `apps/app/app/composables/useDemoSession.ts`. Clear or invalidate stale data, requests, projections, filters and selections; explain the account boundary and document comparison examples. Gate in `apps/app/test/account-switch.spec.ts` and `apps/api/test/access.integration.spec.ts`: `admin` → `user1` and `user1` → `user2` during loading, distinct owned IDs, cross-account detail/lookup denial, forbidden query operands and positive admin fields.
 
 ## Phase 5: User Story 3 - Compare grouping and reported totals (P2)
 

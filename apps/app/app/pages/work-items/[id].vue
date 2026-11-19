@@ -102,7 +102,7 @@ import { resourceIdSchema, workItemSchema, type WorkItem } from '@workboard/cont
 
 const route = useRoute();
 const { $workboardApi } = useNuxtApp();
-const { session } = useDemoSession();
+const { activeSession } = useDemoSession();
 const item = shallowRef<WorkItem>();
 const error = ref<string>();
 const loading = ref(false);
@@ -113,11 +113,13 @@ const api = useModuleApi<DetailEndpoints, 'work-items'>($workboardApi, 'work-ite
 
 /** Uses the typed detail client and ignores responses for an older route or session. */
 async function load(): Promise<void> {
-  if (!session.value) return;
   const current = ++request;
-  const id = resourceIdSchema.safeParse(route.params.id);
   error.value = undefined;
   item.value = undefined;
+  loading.value = false;
+  if (!activeSession.value) return;
+
+  const id = resourceIdSchema.safeParse(route.params.id);
   if (!id.success) {
     error.value = 'Invalid work item ID.';
     return;
@@ -133,7 +135,7 @@ async function load(): Promise<void> {
   }
 }
 
-watch([session, /** Tracks navigation within the same page component. */ () => route.params.id], load);
+watch([activeSession, /** Tracks navigation within the same page component. */ () => route.params.id], load);
 onMounted(load);
 onScopeDispose(
   /** Invalidates in-flight responses when the detail page unmounts. */ () => {

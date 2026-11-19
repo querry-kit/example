@@ -45,6 +45,8 @@ Only PostgreSQL runs in the development Compose file. The API applies the checke
 
 Select `user1`, `user2`, or `admin` without a password. The two regular accounts share a role but have different ownership scopes. Only `admin` can read internal notes and costs.
 
+Use **Switch demo account** in the dashboard navbar. Switching closes details, clears the active project filter, and cancels reads from the previous account. Try the shared Workboard project under both regular accounts: they get different work-item IDs despite having the same role.
+
 ```sh
 curl --fail --cookie-jar workboard.cookies \
   -H 'Origin: http://127.0.0.1:3201' -H 'Content-Type: application/json' \

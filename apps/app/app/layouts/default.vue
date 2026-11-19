@@ -15,20 +15,20 @@
 
     <UDashboardPanel id="workboard-main" :ui="{ body: 'min-w-0' }">
       <template #header>
-        <UDashboardNavbar title="Work items">
+        <UDashboardNavbar title="Work items" :as="{ title: 'span' }">
           <template #leading>
             <UDashboardSidebarCollapse />
           </template>
           <template #right>
-            <UBadge v-if="session" color="neutral" variant="soft" :label="session.login" />
+            <DemoAccountSwitcher v-if="session" :login="session.login" :pending="switching" @select="select" />
             <UColorModeButton />
           </template>
         </UDashboardNavbar>
       </template>
 
       <template #body>
-        <p v-if="!checked" role="status" class="text-muted">
-          Checking demo session…
+        <p v-if="!checked || switching" role="status" class="text-muted">
+          {{ switching ? 'Switching demo account…' : 'Checking demo session…' }}
         </p>
         <section v-else-if="!session" class="mx-auto w-full max-w-xl space-y-4" aria-labelledby="demo-heading">
           <h1 id="demo-heading" class="text-2xl font-semibold">
@@ -51,7 +51,7 @@
             />
           </div>
         </section>
-        <div v-show="checked && session" class="min-w-0">
+        <div v-show="checked && activeSession" class="min-w-0">
           <slot />
         </div>
       </template>
@@ -62,7 +62,7 @@
 <script setup lang="ts">
 import { demoLoginSchema } from '@workboard/contracts';
 
-const { session, checked, switching, error, restore, select } = useDemoSession();
+const { session, activeSession, checked, switching, error, restore, select } = useDemoSession();
 const navigation = [
   { label: 'Work items', icon: 'i-tabler-list-details', to: '/' },
   {

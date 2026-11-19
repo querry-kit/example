@@ -1,7 +1,7 @@
 <template>
-  <WorkItemsWorkItemTable v-if="session" :key="session.id" :session="session" />
+  <WorkItemsWorkItemTable v-if="activeSession" :key="activeSession.id" :session="activeSession" />
 </template>
 
 <script setup lang="ts">
-const { session } = useDemoSession();
+const { activeSession } = useDemoSession();
 </script>
