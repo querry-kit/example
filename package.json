@@ -1,0 +1,14 @@
+{
+  "name": "querry-kit-workboard",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.28.9",
+  "engines": {
+    "node": ">=26.13.0 <27"
+  },
+  "scripts": {
+    "sources:build": "pnpm --filter @querry-kit/nest build && pnpm --filter @querry-kit/nuxt build && pnpm --filter @querry-kit/nuxt-ui build",
+    "build": "pnpm sources:build && pnpm --filter @workboard/contracts build && pnpm --filter @workboard/api build && pnpm --filter @workboard/app build",
+    "typecheck": "pnpm --filter @workboard/contracts typecheck && pnpm --filter @workboard/api typecheck && pnpm --filter @workboard/app typecheck"
+  }
+}

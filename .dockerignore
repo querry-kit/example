@@ -1,0 +1,13 @@
+.git
+.agents
+.specify
+**/node_modules
+**/dist
+**/.nuxt
+**/.output
+**/coverage
+**/.env*
+vendor
+test-results
+playwright-report
+*.log

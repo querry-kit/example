@@ -1,0 +1,24 @@
+{
+  "name": "@workboard/app",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "nuxt build",
+    "typecheck": "nuxt typecheck"
+  },
+  "dependencies": {
+    "@nuxt/ui": "4.12.0",
+    "@querry-kit/nuxt": "workspace:*",
+    "@querry-kit/nuxt-ui": "workspace:*",
+    "@vueuse/core": "15.0.0",
+    "@vueuse/router": "15.0.0",
+    "@workboard/contracts": "workspace:*",
+    "nuxt": "4.6.4",
+    "vue": "3.5.45",
+    "vue-router": "5.4.0"
+  },
+  "devDependencies": {
+    "typescript": "6.0.2",
+    "vue-tsc": "3.3.14"
+  }
+}
