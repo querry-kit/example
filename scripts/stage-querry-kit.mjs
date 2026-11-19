@@ -52,7 +52,10 @@ function normalizeManifest(directory, name) {
 /** Refuses to overwrite anything outside directories produced by this script. */
 function assertOwnedTarget(target) {
   const entry = lstatSync(target, { throwIfNoEntry: false });
-  if (entry && (!entry.isDirectory() || !lstatSync(join(target, ownershipMarker), { throwIfNoEntry: false })?.isFile())) {
+  if (
+    entry &&
+    (!entry.isDirectory() || !lstatSync(join(target, ownershipMarker), { throwIfNoEntry: false })?.isFile())
+  ) {
     throw new Error(`Refusing to overwrite unmanaged path: ${target}`);
   }
 }

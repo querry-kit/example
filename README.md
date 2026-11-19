@@ -15,3 +15,5 @@ pnpm build
 Staging runs before the package manager because the workspace dependencies must exist before installation. It fetches the exact revisions in `scripts/querry-kit-sources.json` into the ignored `vendor/` directory. The example imports them via pnpm `workspace:` dependencies; it does not download Querry Kit packages from npm. Do not place personal checkouts in `vendor/`.
 
 See the [Querry Kit documentation](https://querry-kit.github.io/querry-kit/) for package APIs.
+
+Contributors: see the [coding guidelines](docs/coding-guidelines.md) for check and format commands.

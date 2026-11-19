@@ -15,7 +15,7 @@ description: "Ordered implementation tasks for the Querry Kit Workboard"
 ## Phase 1: Setup
 
 - [X] T001 Bootstrap the private pnpm workspace in `package.json`, `pnpm-workspace.yaml`, `pnpm-lock.yaml` and `.gitignore`; stage pinned sources with `scripts/querry-kit-sources.json` and `scripts/stage-querry-kit.mjs`; scaffold buildable app and library entries in `apps/api/src/main.ts`, `apps/app/app/app.vue` and `libs/contracts/src/index.ts`. Gate: frozen install from verified Git pins, correct Nuxt UI peer/build resolution, workspace exports and both app builds. Document bootstrap in `README.md`.
-- [ ] T002 Configure standards in `eslint.config.mjs`, `.prettierrc.json`, `.prettierignore`, `package.json` and `docs/coding-guidelines.md`, including TS/Vue format, SFC block and attribute order, and JSDoc/TSDoc coverage. Gate: positive/negative TS/Vue fixtures, two identical fix passes, lint/format/typecheck and documented manual exceptions.
+- [X] T002 Configure standards in `eslint.config.mjs`, `.prettierrc.json`, `.prettierignore`, `package.json` and `docs/coding-guidelines.md`, including TS/Vue format, SFC block and attribute order, and JSDoc/TSDoc coverage. Gate: positive/negative TS/Vue fixtures, two identical fix passes, lint/format/typecheck and documented manual exceptions.
 
 ## Phase 2: Foundation
 
