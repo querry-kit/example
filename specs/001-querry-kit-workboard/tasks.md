@@ -47,7 +47,7 @@ description: "Ordered implementation tasks for the Querry Kit Workboard"
 
 **Independent check**: For each sibling, make one temporary observable edit and prove it reaches its consumer after restage/rebuild/restart without registry access or writes to siblings.
 
-- [ ] T011 [P] [US4] Add sibling mode and explicit source paths in `scripts/stage-querry-kit.mjs`, dev scripts in `package.json`, and provenance checks in `scripts/check-querry-kit-sources.mjs`. Document commands, missing-source errors and lockfile drift in `README.md`. Gate: compare cold pinned/local resolution, prove all three local edits reach consumers, no upstream checkout writes, no `@querry-kit/*` registry requests, one shared Nuxt package identity. Depends on T007.
+- [X] T011 [P] [US4] Add sibling mode and explicit source paths in `scripts/stage-querry-kit.mjs`, dev scripts in `package.json`, and provenance checks in `scripts/check-querry-kit-sources.mjs`. Document commands, missing-source errors and lockfile drift in `README.md`. Gate: compare cold pinned/local resolution, prove all three local edits reach consumers, no upstream checkout writes, no `@querry-kit/*` registry requests, one shared Nuxt package identity. Depends on T007.
 
 ## Phase 7: User Story 5 - Adopt Querry Kit in another application (P2)
 

@@ -8,6 +8,8 @@
   },
   "scripts": {
     "sources:build": "pnpm --filter @querry-kit/nest build && pnpm --filter @querry-kit/nuxt build && pnpm --filter @querry-kit/nuxt-ui build",
+    "sources:check": "node scripts/check-querry-kit-sources.mjs",
+    "dev": "pnpm --filter @workboard/contracts build && pnpm --parallel --filter @workboard/api --filter @workboard/app dev",
     "build": "pnpm sources:build && pnpm --filter @workboard/contracts build && pnpm --filter @workboard/api build && pnpm --filter @workboard/app build",
     "typecheck": "pnpm --filter @workboard/contracts typecheck && pnpm --filter @workboard/api typecheck && pnpm --filter @workboard/app typecheck",
     "lint": "eslint . --max-warnings 0",
@@ -24,6 +26,7 @@
     "prettier": "3.10.1",
     "typescript": "6.0.2",
     "typescript-eslint": "8.72.1",
-    "vue-eslint-parser": "10.4.1"
+    "vue-eslint-parser": "10.4.1",
+    "yaml": "2.9.1"
   }
 }

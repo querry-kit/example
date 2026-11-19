@@ -94,3 +94,20 @@ pnpm --filter @workboard/app dev
 Open `http://127.0.0.1:3201`, select `user1`, and explore the two-row pages. The work item toolbar provides search, structured filters, multi-sort, and column options. The project picker searches scoped server results and restores the selected project when you reload its URL. Open a row to see its projected details.
 
 The Nuxt server forwards `/api` and `/docs` to `NUXT_API_ORIGIN` (default `http://127.0.0.1:3101`). The browser always uses the Nuxt origin so the demo cookie can remain HttpOnly without a CORS setup.
+
+## Develop against local Querry Kit packages
+
+Place `nest`, `nuxt`, and `nuxt-ui` next to the example checkout, or set `QUERRY_KIT_NEST_SOURCE`, `QUERRY_KIT_NUXT_SOURCE`, and `QUERRY_KIT_NUXT_UI_SOURCE` to their repository directories.
+
+```sh
+node scripts/stage-querry-kit.mjs --local
+pnpm install --frozen-lockfile
+pnpm sources:build
+pnpm sources:check
+docker compose -f compose.dev.yml up -d --wait
+pnpm dev
+```
+
+The staging script copies your current tracked and unignored edits without changing the source repositories. It builds Nest and Nuxt first, then Nuxt UI against the same local Nuxt package as the app. After a package edit, stop the apps, restage, reinstall and rebuild, then restart `pnpm dev`. Package hot reload is not required.
+
+The pinned standalone build and its lockfile remain the baseline. If a local branch changes dependency manifests, the frozen install rejects lockfile drift. Use a separate example checkout and refresh its lockfile deliberately for dependency experiments; do not replace the pinned baseline with experiment results. `.npmrc` prevents Querry Kit from falling back to the public registry.

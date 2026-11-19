@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "dev": "pnpm db:migrate && pnpm db:generate && tsc-watch --noClear --onSuccess \"node dist/main.js\"",
     "build": "pnpm db:generate && tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "start": "pnpm db:migrate && node dist/main.js",
@@ -40,6 +41,7 @@
     "@types/qs": "6.15.1",
     "@querry-kit/nuxt": "workspace:*",
     "tsx": "4.23.15",
+    "tsc-watch": "7.2.1",
     "typescript": "6.0.2"
   }
 }

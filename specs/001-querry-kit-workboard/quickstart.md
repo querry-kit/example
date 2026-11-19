@@ -19,7 +19,7 @@ Open `http://127.0.0.1:3201`, select `user1`, and confirm the three Compose serv
 Prerequisites: Node `26.13.0`, pnpm `11.28.9`, Compose, and checked-out sibling `nest`, `nuxt`, and `nuxt-ui` directories (or explicit alternative source paths).
 
 ```bash
-pnpm sources:stage:local
+node scripts/stage-querry-kit.mjs --local
 pnpm install --frozen-lockfile
 pnpm sources:build
 docker compose -f compose.dev.yml up -d --wait
