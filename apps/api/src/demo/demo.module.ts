@@ -10,6 +10,6 @@ import { DemoSessionService } from './demo-session.service.js';
   imports: [DatabaseModule],
   controllers: [DemoSessionController],
   providers: [DemoSessionService, DemoSessionGuard],
-  exports: [DemoSessionGuard],
+  exports: [DemoSessionGuard, DemoSessionService],
 })
 export class DemoModule {}

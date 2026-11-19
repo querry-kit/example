@@ -40,3 +40,16 @@ curl --fail --cookie-jar workboard.cookies \
 ```
 
 `DEMO_ORIGIN` controls the exact browser origin accepted by the API. The session expires in 30 minutes and is invalidated on each API restart unless `DEMO_SESSION_SECRET` is configured. Passwordless persona selection is for synthetic local data only, not for production.
+
+### Read a projected list
+
+With the cookie from the previous request, ask for public fields on open work items and a nested project title:
+
+```sh
+curl --fail --cookie workboard.cookies --get \
+  --data-urlencode 'where={"status":"OPEN"}' \
+  --data-urlencode 'fields=id,title,project{title}' \
+  --data-urlencode 'perPage=10' http://127.0.0.1:3101/api/work-items
+```
+
+As `user1`, the list contains `u1-1` and `u1-2` with `meta.itemCount: 2`. `GET /api/work-items/count` returns the count as a JSON number. Use `/docs` to explore projections, lookups, and the validated query shapes.

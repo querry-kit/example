@@ -7,13 +7,15 @@ import fastifyCookie from '@fastify/cookie';
 import { Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { FastifyAdapter, type NestFastifyApplication } from '@nestjs/platform-fastify';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 import { DatabaseModule } from './database/database.module.js';
 import { DemoModule } from './demo/demo.module.js';
 import { HealthController } from './health/health.controller.js';
+import { WorkboardReadsModule } from './work-items/workboard-reads.module.js';
 
 /** API composition root. Domain and infrastructure modules are registered here. */
-@Module({ imports: [DatabaseModule, DemoModule], controllers: [HealthController] })
+@Module({ imports: [DatabaseModule, DemoModule, WorkboardReadsModule], controllers: [HealthController] })
 class AppModule {}
 
 /**
@@ -28,6 +30,15 @@ async function bootstrap(): Promise<void> {
   if (secret.length < 32) throw new Error('DEMO_SESSION_SECRET must be at least 32 characters.');
   await app.getHttpAdapter().getInstance().register(fastifyCookie, { secret });
   app.setGlobalPrefix('api');
+
+  // Interface definitions use the same Zod schemas as the runtime read boundary.
+  // https://querry-kit.github.io/querry-kit/docs/nest/api/openapi/
+  const doc = new DocumentBuilder()
+    .setTitle('Querry Kit Workboard')
+    .setVersion('1')
+    .addCookieAuth('workboard_demo')
+    .build();
+  SwaggerModule.setup('docs', app, SwaggerModule.createDocument(app, doc), { jsonDocumentUrl: 'docs/openapi.json' });
   app.enableShutdownHooks();
   await app.listen(Number(process.env.PORT ?? '3101'), process.env.HOST ?? '127.0.0.1');
 }

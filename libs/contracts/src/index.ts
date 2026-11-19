@@ -5,3 +5,6 @@
 export { z } from 'zod';
 export * from './errors.js';
 export * from './session.js';
+export * from './lookups.js';
+export * from './query.js';
+export * from './work-items.js';
