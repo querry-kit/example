@@ -41,7 +41,7 @@ description: "Ordered implementation tasks for the Querry Kit Workboard"
 **Independent check**: Under each account, group by status/priority, page through branches and compare optional metrics with the independent `OPEN` totals.
 
 - [X] T009 [US3] Add strict grouping/aggregate schemas in `libs/contracts/src/grouping.ts` and scoped Fastify routes in `apps/api/src/work-items/work-item-groups.controller.ts`. Pass already-scoped `where` to `QueryService.aggregate`, explain why in source with direct docs links, and document query examples. Gate in `apps/api/test/grouping.integration.spec.ts`: count/group/aggregate parity across accounts, `having`, two-key grouping, typed inputs, pagination, denied operands and exact fixture totals.
-- [ ] T010 [US3] Wire group UI and separate metrics in `apps/app/app/components/work-items/GroupedWorkItems.vue` and `apps/app/app/composables/useGroupMetrics.ts`, with direct docs links, boundary comments and a usage example. Gate in `apps/app/test/grouped-work-items.spec.ts`: branch expansion, both row loading modes, local retry, metrics toggle, no metric requests when off, filters and account changes.
+- [X] T010 [US3] Wire group UI and separate metrics in `apps/app/app/components/work-items/GroupedWorkItems.vue` and `apps/app/app/composables/useGroupMetrics.ts`, with direct docs links, boundary comments and a usage example. Gate in `apps/app/test/grouped-work-items.spec.ts`: branch expansion, both row loading modes, local retry, metrics toggle, no metric requests when off, filters and account changes.
 
 ## Phase 6: User Story 4 - Develop against local packages (P2)
 

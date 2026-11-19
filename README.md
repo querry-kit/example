@@ -81,6 +81,8 @@ curl --fail --cookie workboard.cookies --get \
 
 `GET /api/work-items/aggregate` accepts the same `where` filter and metric selectors without `by`. Both endpoints apply the active account's CASL scope before the database computes results.
 
+In the dashboard, select **Groups**. Add a second grouping key, expand a branch, and optionally turn on **Show effort metrics**. Switch between page buttons and incremental loading to compare both ways of fetching group rows. The count and metrics include every matching authorized row, even when only one row has been loaded.
+
 ### Open the dashboard
 
 With the local API running, start the Nuxt app:

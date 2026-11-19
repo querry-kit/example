@@ -22,8 +22,8 @@
         v-model:invisible-columns="columnVisibility"
         v-model:column-pinning="columnPinning"
         search-placeholder="Search work items"
-        :filter-fields="filterFields"
-        :sortable-fields="sortableFields"
+        :filter-fields="workItemFilterFields"
+        :sortable-fields="workItemSortableFields"
         :column-definitions="columnOptions"
         :ui="{ primary: 'min-w-0', secondary: 'min-w-0' }"
       />
@@ -75,17 +75,12 @@
 
 <script setup lang="ts">
 import type { TableColumn } from '@nuxt/ui';
-import { andWhere, useTable, type TableColumnInput } from '@querry-kit/nuxt';
-import type { ColumnDefinition, FilterField, Filtering, SortingField } from '@querry-kit/nuxt-ui/types';
+import { useTable, type TableColumnInput } from '@querry-kit/nuxt';
+import type { ColumnDefinition, Filtering } from '@querry-kit/nuxt-ui/types';
 import { refDebounced } from '@vueuse/core';
-import {
-  resourceIdSchema,
-  workItemPrioritySchema,
-  workItemStatusSchema,
-  workItemWhereSchema,
-  type DemoSession,
-  type WorkItem,
-} from '@workboard/contracts';
+import { resourceIdSchema, type DemoSession, type WorkItem } from '@workboard/contracts';
+
+import { workItemFilterFields, workItemSortableFields, workItemStaticWhere } from '~/utils/work-item-controls';
 
 const props = defineProps<{ session: DemoSession }>();
 const { $workboardApi } = useNuxtApp();
@@ -105,14 +100,7 @@ watch(project, persistProject);
 
 const staticFilter = computed(
   /** Validates the search and relation filters using the same contract as the API. */
-  () => {
-    const title = debouncedSearch.value.trim().slice(0, 160);
-    const where = andWhere(
-      title ? { title: { contains: title, mode: 'insensitive' } } : undefined,
-      project.value ? { project: { id: project.value } } : undefined,
-    );
-    return where ? workItemWhereSchema.parse(where) : undefined;
-  },
+  () => workItemStaticWhere(debouncedSearch.value, project.value),
 );
 
 /** Renders the title from the projected relation rather than passing the object to the renderer. */
@@ -160,29 +148,6 @@ const columnOptions = computed<ColumnDefinition[]>(
       ({ id, header, enableHiding }) => (id && typeof header === 'string' ? [{ id, header, enableHiding }] : []),
     ),
 );
-
-const sortableFields: SortingField[] = [
-  { value: 'title', label: 'Title' },
-  { value: 'status', label: 'Status' },
-  { value: 'priority', label: 'Priority' },
-  { value: 'estimatedHours', label: 'Est. hours' },
-  { value: 'createdAt', label: 'Created at' },
-];
-const filterFields: FilterField[] = [
-  {
-    value: 'status',
-    label: 'Status',
-    type: 'enum',
-    values: workItemStatusSchema.options.map(/** Labels a status option. */ (value) => ({ value, label: value })),
-  },
-  {
-    value: 'priority',
-    label: 'Priority',
-    type: 'enum',
-    values: workItemPrioritySchema.options.map(/** Labels a priority option. */ (value) => ({ value, label: value })),
-  },
-  { value: 'estimatedHours', label: 'Est. hours', type: 'number' },
-];
 
 // The headless table owns projections, preferences, sorting, and server pagination.
 // https://querry-kit.github.io/querry-kit/docs/nuxt/api/table/

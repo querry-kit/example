@@ -65,6 +65,7 @@ import { demoLoginSchema } from '@workboard/contracts';
 const { session, activeSession, checked, switching, error, restore, select } = useDemoSession();
 const navigation = [
   { label: 'Work items', icon: 'i-tabler-list-details', to: '/' },
+  { label: 'Groups', icon: 'i-tabler-layout-grid', to: '/groups' },
   {
     label: 'API reference',
     icon: 'i-tabler-api',

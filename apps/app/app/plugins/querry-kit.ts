@@ -4,6 +4,8 @@ import {
   demoSessionSchema,
   labelLookupPageSchema,
   projectLookupPageSchema,
+  workItemAggregateSchema,
+  workItemGroupsSchema,
   workItemPageSchema,
   workItemSchema,
 } from '@workboard/contracts';
@@ -43,7 +45,9 @@ export default defineNuxtPlugin(
         if (route === '/work-items') response.data = workItemPageSchema.parse(response.data);
         if (route === '/projects') response.data = projectLookupPageSchema.parse(response.data);
         if (route === '/labels') response.data = labelLookupPageSchema.parse(response.data);
-        if (/^\/work-items\/(?:find-by-id\/)?[^/]+$/.test(route) && route !== '/work-items/count') {
+        if (route === '/work-items/group-by') response.data = workItemGroupsSchema.parse(response.data);
+        else if (route === '/work-items/aggregate') response.data = workItemAggregateSchema.parse(response.data);
+        else if (/^\/work-items\/(?:find-by-id\/)?[^/]+$/.test(route) && route !== '/work-items/count') {
           response.data = workItemSchema.parse(response.data);
         }
         return response;
