@@ -67,6 +67,15 @@ importers:
 
   apps/api:
     dependencies:
+      '@casl/ability':
+        specifier: 7.1.1
+        version: 7.1.1
+      '@casl/prisma':
+        specifier: 2.2.0
+        version: 2.2.0(@casl/ability@7.1.1)(@prisma/client@7.10.1(prisma@7.10.1(@types/node@26.6.6)(@types/react@19.3.0)(magicast@0.5.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(typescript@6.0.2))(typescript@6.0.2))
+      '@fastify/cookie':
+        specifier: 11.1.5
+        version: 11.1.5
       '@nestjs/common':
         specifier: 12.3.3
         version: 12.3.3(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@10.2.2)
@@ -94,6 +103,9 @@ importers:
       dotenv:
         specifier: 18.0.9
         version: 18.0.9
+      fastify:
+        specifier: 5.12.8
+        version: 5.12.8
       prisma:
         specifier: 7.10.1
         version: 7.10.1(@types/node@26.6.6)(@types/react@19.3.0)(magicast@0.5.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(typescript@6.0.2)
@@ -103,6 +115,9 @@ importers:
       rxjs:
         specifier: ^7.8.2
         version: 7.8.2
+      zod:
+        specifier: 4.6.7
+        version: 4.6.7
     devDependencies:
       '@types/node':
         specifier: ^26.6.6
@@ -665,6 +680,9 @@ packages:
     resolution: {integrity: sha512-CuNiSqg7+e1cO/GjffyMOm5Tt2jUF9CWHHnvQ/UkqvtkGfHdgwEC0wpmq7fkN3gxwpRnrAN0WzO3vREKmNolMQ==}
     engines: {node: '>=18'}
 
+  '@casl/ability@7.1.1':
+    resolution: {integrity: sha512-1WL90aW65z7RyaoFhOrfUua6e8gk5I2DS7WDjTTI5/qtGnFcnesX4LvfXkqO21LexTswLq71s4Lfs93eI45z8A==}
+
   '@casl/ability@7.1.3':
     resolution: {integrity: sha512-4V7ER1Q7r0be9dwpJQuSA99Cazk6gnFEpYpiCV1MCSkBoLAycMgrpXjsrFR06OHBtWlTeGKAhARXQKg+pw3fbg==}
 
@@ -1163,6 +1181,9 @@ packages:
 
   '@fastify/ajv-compiler@4.0.8':
     resolution: {integrity: sha512-xYcAFYoyP/NELMgj6I7LmMAmiqeXMal0wsM2SgueN9OyMr6bVKHomO9OxuStC7bIAEl4Z3JXBbDPwpXRp59NPQ==}
+
+  '@fastify/cookie@11.1.5':
+    resolution: {integrity: sha512-hs7e0otf7n/lJMpt63EFdQb5/u8kO6DeexEtLPVTybSdItC6SwJ1O0vtTyWvKNR70LZcHLlsUr/y3jFpqtyWRA==}
 
   '@fastify/cors@11.4.0':
     resolution: {integrity: sha512-+P4+RIRx5I3rkC1QttZ9gqSJ3AHrsM4PrZF6bpgbElt86n7gOBiHL3J0H3moVSyfc+vvvNto+Ay1LmG7ZQ37pA==}
@@ -8264,9 +8285,20 @@ snapshots:
     dependencies:
       fontkitten: 1.0.3
 
+  '@casl/ability@7.1.1':
+    dependencies:
+      '@ucast/mongo2js': 2.0.0
+
   '@casl/ability@7.1.3':
     dependencies:
       '@ucast/mongo2js': 2.0.0
+
+  '@casl/prisma@2.2.0(@casl/ability@7.1.1)(@prisma/client@7.10.1(prisma@7.10.1(@types/node@26.6.6)(@types/react@19.3.0)(magicast@0.5.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(typescript@6.0.2))(typescript@6.0.2))':
+    dependencies:
+      '@casl/ability': 7.1.1
+      '@prisma/client': 7.10.1(prisma@7.10.1(@types/node@26.6.6)(@types/react@19.3.0)(magicast@0.5.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(typescript@6.0.2))(typescript@6.0.2)
+      '@ucast/core': 2.0.0
+      '@ucast/js': 4.0.1
 
   '@casl/prisma@2.2.0(@casl/ability@7.1.3)(@prisma/client@7.10.1(@typescript/typescript6@6.0.2)(prisma@7.10.1(@types/node@26.6.6)(@types/react@19.3.0)(@typescript/typescript6@6.0.2)(magicast@0.5.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)))':
     dependencies:
@@ -8687,6 +8719,11 @@ snapshots:
       ajv: 8.20.0
       ajv-formats: 3.0.1
       fast-uri: 4.2.3
+
+  '@fastify/cookie@11.1.5':
+    dependencies:
+      cookie: 2.0.2
+      fastify-plugin: 6.0.1
 
   '@fastify/cors@11.4.0':
     dependencies:

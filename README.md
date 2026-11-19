@@ -28,3 +28,15 @@ pnpm --filter @workboard/api start
 ```
 
 Only PostgreSQL runs in the development Compose file. The API applies the checked-in migration and seeds the database only when all application tables are empty. It listens on `127.0.0.1:3101` by default; `GET /api/health/ready` confirms initialization. To change the database connection, set `DATABASE_URL` for the API and Prisma CLI.
+
+## Demo accounts
+
+Select `user1`, `user2`, or `admin` without a password. The two regular accounts share a role but have different ownership scopes. Only `admin` can read internal notes and costs.
+
+```sh
+curl --fail --cookie-jar workboard.cookies \
+  -H 'Origin: http://127.0.0.1:3201' -H 'Content-Type: application/json' \
+  --data '{"login":"user1"}' http://127.0.0.1:3101/api/demo/session
+```
+
+`DEMO_ORIGIN` controls the exact browser origin accepted by the API. The session expires in 30 minutes and is invalidated on each API restart unless `DEMO_SESSION_SECRET` is configured. Passwordless persona selection is for synthetic local data only, not for production.

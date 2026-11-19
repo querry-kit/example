@@ -1,15 +1,19 @@
 import 'reflect-metadata';
 import 'dotenv/config';
 
+import { randomBytes } from 'node:crypto';
+
+import fastifyCookie from '@fastify/cookie';
 import { Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { FastifyAdapter, type NestFastifyApplication } from '@nestjs/platform-fastify';
 
 import { DatabaseModule } from './database/database.module.js';
+import { DemoModule } from './demo/demo.module.js';
 import { HealthController } from './health/health.controller.js';
 
 /** API composition root. Domain and infrastructure modules are registered here. */
-@Module({ imports: [DatabaseModule], controllers: [HealthController] })
+@Module({ imports: [DatabaseModule, DemoModule], controllers: [HealthController] })
 class AppModule {}
 
 /**
@@ -19,6 +23,10 @@ class AppModule {}
  */
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter());
+  // A fresh secret keeps the local demo self-contained; a restart invalidates its sessions by default.
+  const secret = process.env.DEMO_SESSION_SECRET ?? randomBytes(32).toString('base64url');
+  if (secret.length < 32) throw new Error('DEMO_SESSION_SECRET must be at least 32 characters.');
+  await app.getHttpAdapter().getInstance().register(fastifyCookie, { secret });
   app.setGlobalPrefix('api');
   app.enableShutdownHooks();
   await app.listen(Number(process.env.PORT ?? '3101'), process.env.HOST ?? '127.0.0.1');
