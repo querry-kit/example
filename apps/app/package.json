@@ -3,10 +3,14 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "dev": "nuxt dev --host 127.0.0.1 --port 3201",
     "build": "nuxt build",
-    "typecheck": "nuxt typecheck"
+    "typecheck": "nuxt typecheck",
+    "test:workboard": "playwright test --config playwright.config.ts workboard.spec.ts"
   },
   "dependencies": {
+    "@iconify-json/lucide": "1.2.156",
+    "@iconify-json/tabler": "1.2.46",
     "@nuxt/ui": "4.12.0",
     "@querry-kit/nuxt": "workspace:*",
     "@querry-kit/nuxt-ui": "workspace:*",
@@ -18,6 +22,7 @@
     "vue-router": "5.4.0"
   },
   "devDependencies": {
+    "@playwright/test": "1.65.1",
     "typescript": "6.0.2",
     "vue-tsc": "3.3.14"
   }

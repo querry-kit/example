@@ -1,9 +1,7 @@
 <template>
   <UApp>
-    <main>
-      <h1>
-        Querry Kit Workboard
-      </h1>
-    </main>
+    <NuxtLayout>
+      <NuxtPage />
+    </NuxtLayout>
   </UApp>
 </template>

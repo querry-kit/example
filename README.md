@@ -53,3 +53,13 @@ curl --fail --cookie workboard.cookies --get \
 ```
 
 As `user1`, the list contains `u1-1` and `u1-2` with `meta.itemCount: 2`. `GET /api/work-items/count` returns the count as a JSON number. Use `/docs` to explore projections, lookups, and the validated query shapes.
+
+### Open the dashboard
+
+With the local API running, start the Nuxt app:
+
+```sh
+pnpm --filter @workboard/app dev
+```
+
+Open `http://127.0.0.1:3201`, select `user1`, and explore the two-row pages. The work item toolbar provides search, structured filters, multi-sort, and column options. The project picker searches scoped server results and restores the selected project when you reload its URL. Open a row to see its projected details.

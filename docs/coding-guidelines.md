@@ -30,3 +30,5 @@ Run commands from the workspace root. Check commands do not change files.
 | `pnpm build`        | Build staged packages, contracts, API and web app              |
 
 When editing formatter or lint rules, verify valid and invalid TS and Vue fixtures and require identical bytes on a second format pass. Vue formatting intentionally applies layout rules after Prettier; plain `prettier --check` does not replace `pnpm format:check`.
+
+For Spec Kit delivery, validate one task, make its own commit, then push it to the linked issue branch before starting the next task. A push does not authorize merging.
