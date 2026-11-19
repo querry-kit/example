@@ -57,7 +57,7 @@ description: "Ordered implementation tasks for the Querry Kit Workboard"
 
 ## Phase 8: Cross-cutting validation
 
-- [ ] T013 Add `.github/workflows/ci.yml` and `tests/e2e/workboard.spec.ts`; run lint/format/typecheck/test/build, cold Compose provenance, seeded restart, real HTTP contracts and browser flows at 375, 768 and 1280 px with keyboard and light/dark checks. Document verified commands and remaining evidence gaps in `README.md`. Do not add publishing or release automation.
+- [X] T013 Add `.github/workflows/ci.yml` and `tests/e2e/workboard.spec.ts`; run lint/format/typecheck/test/build, cold Compose provenance, seeded restart, real HTTP contracts and browser flows at 375, 768 and 1280 px with keyboard and light/dark checks. Document verified commands and remaining evidence gaps in `README.md`. Do not add publishing or release automation.
 
 ## Dependencies & Execution Order
 

@@ -80,6 +80,7 @@ test(
       assert.equal(await seedWorkboard(prisma), false);
       assert.deepEqual(await prisma.label.findMany({ select: { id: true } }), [{ id: 'custom' }]);
       assert.equal(await prisma.account.count(), 0);
+      await clearFixtureTables(prisma);
     } finally {
       await prisma.$disconnect();
     }

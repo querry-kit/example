@@ -68,7 +68,13 @@
         </UTable>
       </div>
 
-      <QTablePagination v-model:page="page" v-model:items-per-page="itemsPerPage" :total-items="totalItems" />
+      <QTablePagination v-model:page="page" v-model:items-per-page="itemsPerPage" :total-items="totalItems">
+        <template #left="{ start, end, totalItems: total }">
+          <p class="text-sm text-muted" aria-live="polite">
+            Showing {{ start }}–{{ end }} of {{ total }}
+          </p>
+        </template>
+      </QTablePagination>
     </div>
   </section>
 </template>

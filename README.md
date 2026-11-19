@@ -121,3 +121,11 @@ The pinned standalone build and its lockfile remain the baseline. If a local bra
 5. [`WorkItemTable.vue`](apps/app/app/components/work-items/WorkItemTable.vue) binds `useTable` to the Nuxt UI controls; [`ProjectLookup.vue`](apps/app/app/components/work-items/ProjectLookup.vue) handles scoped autocomplete. [`GroupedWorkItems.vue`](apps/app/app/components/work-items/GroupedWorkItems.vue) adds lazy groups, and [`useGroupMetrics.ts`](apps/app/app/composables/useGroupMetrics.ts) fetches optional aggregates.
 
 Key integration blocks link directly to their Querry Kit docs. To use this repo as a starter or introduce Querry Kit into an existing app, see [Adopt Querry Kit](docs/adopt-querry-kit.md).
+
+## Verify changes
+
+After bootstrapping, run `pnpm lint`, `pnpm format:check`, `pnpm build`, `pnpm typecheck`, and `pnpm sources:check`.
+
+- `pnpm test:api` runs migrations, seed and live Fastify integration against a disposable PostgreSQL Compose project. It requires free loopback ports `55463` and `35463` (or `WORKBOARD_TEST_DB_PORT` and `WORKBOARD_TEST_API_PORT`).
+- `pnpm test:web` runs Playwright against a web app that is already running; set `WORKBOARD_TEST_APP_URL` if it differs from `http://127.0.0.1:3201`. Install Chromium first with `pnpm --filter @workboard/app exec playwright install --with-deps chromium` on supported Linux hosts.
+- `pnpm test:compose` uses Docker, curl and jq to build the standalone stack without a Docker build cache, run browser tests, and compare seed IDs across a restart. It uses a separate volume and loopback port `35465` by default; override that port with `WORKBOARD_TEST_COMPOSE_PORT`.

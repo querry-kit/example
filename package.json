@@ -15,10 +15,15 @@
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix --max-warnings 0",
     "format:check": "node scripts/format.mjs",
-    "format:fix": "node scripts/format.mjs --write"
+    "format:fix": "node scripts/format.mjs --write",
+    "test": "pnpm test:api && pnpm test:web",
+    "test:api": "bash scripts/test-api.sh",
+    "test:web": "pnpm --filter @workboard/app exec playwright test --config playwright.config.ts",
+    "test:compose": "bash scripts/test-compose.sh"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
+    "@playwright/test": "1.65.1",
     "eslint": "10.14.0",
     "eslint-plugin-jsdoc": "65.4.11",
     "eslint-plugin-vue": "10.12.1",
