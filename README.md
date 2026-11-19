@@ -68,6 +68,19 @@ curl --fail --cookie workboard.cookies --get \
 
 As `user1`, the list contains `u1-1` and `u1-2` with `meta.itemCount: 2`. `GET /api/work-items/count` returns the count as a JSON number. Use `/docs` to explore projections, lookups, and the validated query shapes.
 
+### Read groups and metrics
+
+Grouping returns only group keys unless you opt in to metrics. For example, request the two-level combination of status and priority, plus counts and estimated hours:
+
+```sh
+curl --fail --cookie workboard.cookies --get \
+  --data-urlencode 'by[0]=status' --data-urlencode 'by[1]=priority' \
+  --data-urlencode '_count[_all]=true' --data-urlencode '_sum[estimatedHours]=true' \
+  http://127.0.0.1:3101/api/work-items/group-by
+```
+
+`GET /api/work-items/aggregate` accepts the same `where` filter and metric selectors without `by`. Both endpoints apply the active account's CASL scope before the database computes results.
+
 ### Open the dashboard
 
 With the local API running, start the Nuxt app:
