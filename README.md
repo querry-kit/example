@@ -111,3 +111,13 @@ pnpm dev
 The staging script copies your current tracked and unignored edits without changing the source repositories. It builds Nest and Nuxt first, then Nuxt UI against the same local Nuxt package as the app. After a package edit, stop the apps, restage, reinstall and rebuild, then restart `pnpm dev`. Package hot reload is not required.
 
 The pinned standalone build and its lockfile remain the baseline. If a local branch changes dependency manifests, the frozen install rejects lockfile drift. Use a separate example checkout and refresh its lockfile deliberately for dependency experiments; do not replace the pinned baseline with experiment results. `.npmrc` prevents Querry Kit from falling back to the public registry.
+
+## Follow one read request
+
+1. [`libs/contracts/src/work-items.ts`](libs/contracts/src/work-items.ts) defines the work item filters and response. Both apps import the same Zod schemas and inferred types.
+2. [`query-parser.ts`](apps/api/src/query/query-parser.ts) normalizes the Fastify query without turning opaque string values into numbers. [`query-docs.ts`](apps/api/src/query/query-docs.ts) builds OpenAPI from the same input and output schemas.
+3. [`work-items.service.ts`](apps/api/src/work-items/work-items.service.ts) calls Query Kit's resource helper with a CASL-scoped service. [`work-item-projection.ts`](apps/api/src/work-items/work-item-projection.ts) maps the Prisma joins and removes unreadable fields.
+4. [`querry-kit.ts`](apps/app/app/plugins/querry-kit.ts) configures the Nuxt client, validates incoming data and cancels account-bound reads when the user switches.
+5. [`WorkItemTable.vue`](apps/app/app/components/work-items/WorkItemTable.vue) binds `useTable` to the Nuxt UI controls; [`ProjectLookup.vue`](apps/app/app/components/work-items/ProjectLookup.vue) handles scoped autocomplete. [`GroupedWorkItems.vue`](apps/app/app/components/work-items/GroupedWorkItems.vue) adds lazy groups, and [`useGroupMetrics.ts`](apps/app/app/composables/useGroupMetrics.ts) fetches optional aggregates.
+
+Key integration blocks link directly to their Querry Kit docs. To use this repo as a starter or introduce Querry Kit into an existing app, see [Adopt Querry Kit](docs/adopt-querry-kit.md).

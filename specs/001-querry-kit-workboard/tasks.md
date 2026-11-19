@@ -53,7 +53,7 @@ description: "Ordered implementation tasks for the Querry Kit Workboard"
 
 **Independent check**: From a disposable copy, follow the guide to add one public field through storage, contracts, projection and UI without editing upstream.
 
-- [ ] T012 [US5] Publish a source-linked read walkthrough in `README.md` and copy/integrate guides in `docs/adopt-querry-kit.md`. Cover rename/environment, field extension and replacement of demo-only auth, seed, secrets and local settings. Audit source comments against the [direct-link map](plan.md#developer-walkthrough-and-template-reuse). Gate: reviewer completes the field extension, passes documented checks, verifies comment/doc links and identifies demo-only code.
+- [X] T012 [US5] Publish a source-linked read walkthrough in `README.md` and copy/integrate guides in `docs/adopt-querry-kit.md`. Cover rename/environment, field extension and replacement of demo-only auth, seed, secrets and local settings. Audit source comments against the [direct-link map](plan.md#developer-walkthrough-and-template-reuse). Gate: reviewer completes the field extension, passes documented checks, verifies comment/doc links and identifies demo-only code.
 
 ## Phase 8: Cross-cutting validation
 
