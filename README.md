@@ -2,6 +2,18 @@
 
 A reference workspace for a NestJS/Fastify API and Nuxt 4 dashboard using Querry Kit. It uses a shared Zod contracts package.
 
+## Try the standalone demo
+
+From a checkout of this repo with Docker Compose and network access:
+
+```sh
+docker compose up -d --build --wait
+```
+
+Open `http://127.0.0.1:3201`, select a demo account, or open `http://127.0.0.1:3201/docs` for the API reference. The stack runs PostgreSQL, Fastify and Nuxt; only the Nuxt port is exposed on loopback. No sibling checkouts or host Node/pnpm installation are needed. Set `WORKBOARD_APP_PORT` to use a different host port and open the matching `127.0.0.1` URL.
+
+Use `docker compose down` to stop the stack while retaining the data. A normal restart does not add or overwrite fixtures.
+
 ## Bootstrap
 
 Install Node.js 26.13.0 or a newer Node 26 patch, pnpm 11.28.9, and Git. Then run:
@@ -63,3 +75,5 @@ pnpm --filter @workboard/app dev
 ```
 
 Open `http://127.0.0.1:3201`, select `user1`, and explore the two-row pages. The work item toolbar provides search, structured filters, multi-sort, and column options. The project picker searches scoped server results and restores the selected project when you reload its URL. Open a row to see its projected details.
+
+The Nuxt server forwards `/api` and `/docs` to `NUXT_API_ORIGIN` (default `http://127.0.0.1:3101`). The browser always uses the Nuxt origin so the demo cookie can remain HttpOnly without a CORS setup.

@@ -17,6 +17,7 @@
     "@vueuse/core": "15.0.0",
     "@vueuse/router": "15.0.0",
     "@workboard/contracts": "workspace:*",
+    "h3": "1.15.11",
     "nuxt": "4.6.4",
     "vue": "3.5.45",
     "vue-router": "5.4.0"

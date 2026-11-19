@@ -66,6 +66,13 @@ const { session, checked, switching, error, restore, select } = useDemoSession()
 const navigation = [
   { label: 'Work items', icon: 'i-tabler-list-details', to: '/' },
   {
+    label: 'API reference',
+    icon: 'i-tabler-api',
+    to: '/docs',
+    target: '_blank',
+    rel: 'noopener noreferrer',
+  },
+  {
     label: 'Querry Kit docs',
     icon: 'i-tabler-book',
     to: 'https://querry-kit.github.io/querry-kit/',
