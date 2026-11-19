@@ -17,3 +17,14 @@ Staging runs before the package manager because the workspace dependencies must 
 See the [Querry Kit documentation](https://querry-kit.github.io/querry-kit/) for package APIs.
 
 Contributors: see the [coding guidelines](docs/coding-guidelines.md) for check and format commands.
+
+## Start the API locally
+
+After bootstrap, start the local database and the built API:
+
+```sh
+docker compose -f compose.dev.yml up -d --wait
+pnpm --filter @workboard/api start
+```
+
+Only PostgreSQL runs in the development Compose file. The API applies the checked-in migration and seeds the database only when all application tables are empty. It listens on `127.0.0.1:3101` by default; `GET /api/health/ready` confirms initialization. To change the database connection, set `DATABASE_URL` for the API and Prisma CLI.

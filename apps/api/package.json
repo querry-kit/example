@@ -3,22 +3,30 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "pnpm db:generate && tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "start": "node dist/main.js"
+    "start": "pnpm db:migrate && node dist/main.js",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate deploy",
+    "test:database": "tsx --test test/database.integration.spec.ts"
   },
   "dependencies": {
     "@nestjs/common": "12.3.3",
     "@nestjs/core": "12.3.3",
     "@nestjs/platform-fastify": "12.3.3",
     "@nestjs/swagger": "12.1.0",
+    "@prisma/adapter-pg": "7.10.1",
+    "@prisma/client": "7.10.1",
     "@querry-kit/nest": "workspace:*",
     "@workboard/contracts": "workspace:*",
+    "dotenv": "18.0.9",
+    "prisma": "7.10.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2"
   },
   "devDependencies": {
     "@types/node": "^26.6.6",
+    "tsx": "4.23.15",
     "typescript": "6.0.2"
   }
 }

@@ -1,0 +1,89 @@
+generator client {
+  provider               = "prisma-client"
+  output                 = "../src/generated/prisma"
+  moduleFormat           = "esm"
+  generatedFileExtension = "ts"
+  importFileExtension    = "js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum AccountRole {
+  user
+  admin
+}
+
+enum WorkItemStatus {
+  OPEN
+  IN_PROGRESS
+  DONE
+  ARCHIVED
+}
+
+enum WorkItemPriority {
+  LOW
+  NORMAL
+  HIGH
+}
+
+model Account {
+  id            String     @id
+  login         String     @unique
+  role          AccountRole
+  profile       Profile?
+  ownedItems    WorkItem[] @relation("Owner")
+  assignedItems WorkItem[] @relation("Assignee")
+}
+
+model Profile {
+  accountId   String  @id
+  displayName String
+  account     Account @relation(fields: [accountId], references: [id])
+}
+
+model Project {
+  id        String     @id
+  slug      String     @unique
+  title     String
+  workItems WorkItem[]
+}
+
+model WorkItem {
+  id                String           @id
+  projectId         String
+  ownerId           String
+  assigneeId        String?
+  title             String
+  status            WorkItemStatus
+  priority          WorkItemPriority
+  estimatedHours    Int
+  internalNote      String
+  internalCostCents Int
+  createdAt         DateTime
+  project           Project          @relation(fields: [projectId], references: [id])
+  owner             Account          @relation("Owner", fields: [ownerId], references: [id])
+  assignee          Account?         @relation("Assignee", fields: [assigneeId], references: [id])
+  labels            WorkItemLabel[]
+
+  @@index([ownerId, projectId])
+  @@index([projectId])
+}
+
+model Label {
+  id          String          @id
+  slug        String          @unique
+  displayName String
+  workItems   WorkItemLabel[]
+}
+
+model WorkItemLabel {
+  workItemId String
+  labelId    String
+  workItem   WorkItem @relation(fields: [workItemId], references: [id])
+  label      Label    @relation(fields: [labelId], references: [id])
+
+  @@id([workItemId, labelId])
+  @@index([labelId])
+}

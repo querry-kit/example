@@ -5,6 +5,7 @@ build/
 .output/
 .data/
 /vendor/
+/apps/api/src/generated/
 coverage/
 playwright-report/
 test-results/

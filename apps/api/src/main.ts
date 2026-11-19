@@ -1,11 +1,15 @@
 import 'reflect-metadata';
+import 'dotenv/config';
 
 import { Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { FastifyAdapter, type NestFastifyApplication } from '@nestjs/platform-fastify';
 
+import { DatabaseModule } from './database/database.module.js';
+import { HealthController } from './health/health.controller.js';
+
 /** API composition root. Domain and infrastructure modules are registered here. */
-@Module({})
+@Module({ imports: [DatabaseModule], controllers: [HealthController] })
 class AppModule {}
 
 /**
@@ -15,6 +19,8 @@ class AppModule {}
  */
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter());
+  app.setGlobalPrefix('api');
+  app.enableShutdownHooks();
   await app.listen(Number(process.env.PORT ?? '3101'), process.env.HOST ?? '127.0.0.1');
 }
 

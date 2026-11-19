@@ -1,0 +1,19 @@
+services:
+  db:
+    image: postgres:17-bookworm
+    environment:
+      POSTGRES_DB: ${WORKBOARD_DB_NAME:-workboard}
+      POSTGRES_USER: workboard
+      POSTGRES_PASSWORD: workboard
+    ports:
+      - '127.0.0.1:${WORKBOARD_DB_PORT:-54329}:5432'
+    volumes:
+      - workboard-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U workboard -d "$$POSTGRES_DB"']
+      interval: 2s
+      timeout: 3s
+      retries: 15
+
+volumes:
+  workboard-data:
