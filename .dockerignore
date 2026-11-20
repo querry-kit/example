@@ -1,6 +1,7 @@
 .git
 .agents
 .specify
+dockerdata/
 **/node_modules
 **/dist
 **/.nuxt

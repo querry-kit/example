@@ -53,7 +53,7 @@ curl --fail --cookie-jar workboard.cookies \
   --data '{"login":"user1"}' http://127.0.0.1:3101/api/demo/session
 ```
 
-`DEMO_ORIGIN` controls the exact browser origin accepted by the API. The session expires in 30 minutes and is invalidated on each API restart unless `DEMO_SESSION_SECRET` is configured. Passwordless persona selection is for synthetic local data only, not for production.
+`DEMO_ORIGIN` configures the browser origin accepted by the API. For local HTTP, `localhost` and `127.0.0.1` are both accepted on the configured port. All other origins must match `DEMO_ORIGIN` exactly. The session expires in 30 minutes and is invalidated on each API restart unless `DEMO_SESSION_SECRET` is configured. Passwordless persona selection is for synthetic local data only, not for production.
 
 ### Read a projected list
 

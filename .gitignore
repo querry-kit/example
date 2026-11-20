@@ -4,6 +4,7 @@ build/
 .nuxt/
 .output/
 .data/
+/dockerdata/
 /vendor/
 /apps/api/src/generated/
 coverage/
