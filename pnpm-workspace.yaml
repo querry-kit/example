@@ -18,6 +18,9 @@ allowBuilds:
 
 # Staged projects use this workspace's install policy. Preserve their relevant overrides here.
 overrides:
+  effect@<=3.22.0: 3.22.1
+  glob@>=9.0.0 <14.0.2: 14.0.2
+  minimatch@>=7.0.0 <11.0.1: 11.0.1
   argparse@1.0.10: 2.0.1
   baseline-browser-mapping@>=2.0.0 <2.11.0: ^2.11.0
   brace-expansion@1.1.16: 1.1.18
@@ -34,7 +37,7 @@ overrides:
   multer@<2.3.0: ^2.3.0
   'mkdist@2.4.1>vue-sfc-transformer': 0.2.5
   nanoid@3.3.16: 3.3.18
-  node-forge@<=1.4.0: 1.4.1
+  node-forge@<=1.4.2: 1.4.3
   postcss@8.5.21: 8.5.23
   qs@<6.16.0: 6.17.1
   serialize-javascript@>=7.1.1 <7.1.4: 7.1.4
