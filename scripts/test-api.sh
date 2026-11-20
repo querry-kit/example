@@ -11,7 +11,9 @@ export WORKBOARD_TEST_DATABASE_URL="postgresql://workboard:workboard@127.0.0.1:$
 export DATABASE_URL=$WORKBOARD_TEST_DATABASE_URL
 export DEMO_ORIGIN=${WORKBOARD_TEST_APP_ORIGIN:-http://127.0.0.1:3201}
 project="workboard-api-test-$$"
-log=$(mktemp)
+temp=$(mktemp -d)
+log="$temp/api.log"
+override="$temp/compose.override.yml"
 
 # The test project and database name keep fixture resets away from the development data.
 cleanup() {
@@ -19,12 +21,23 @@ cleanup() {
     kill "$api_pid" 2>/dev/null || true
     wait "$api_pid" 2>/dev/null || true
   fi
-  docker compose -p "$project" -f compose.dev.yml down -v
-  rm -f "$log"
+  docker compose -p "$project" -f compose.dev.yml -f "$override" down -v
+  rm -f "$log" "$override"
+  rmdir "$temp"
 }
 trap cleanup EXIT
 
-docker compose -p "$project" -f compose.dev.yml up -d --wait
+cat > "$override" <<'YAML'
+services:
+  db:
+    volumes:
+      - workboard-data:/var/lib/postgresql
+
+volumes:
+  workboard-data:
+YAML
+
+docker compose -p "$project" -f compose.dev.yml -f "$override" up -d --wait
 pnpm --filter @workboard/api db:migrate
 pnpm --filter @workboard/api test:database
 node apps/api/dist/main.js > "$log" 2>&1 &
