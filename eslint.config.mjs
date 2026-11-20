@@ -34,6 +34,7 @@ export default [
       '**/playwright-report/**',
       '**/test-results/**',
       'vendor/**',
+      'dockerdata/**',
       '.agents/**',
       '.specify/**',
     ],
