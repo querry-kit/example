@@ -17,7 +17,7 @@ async function groupByStatus(page: Page): Promise<void> {
   await page.getByRole('combobox', { name: 'Select grouping field' }).click();
   await page.getByRole('option', { name: 'Status', exact: true }).click();
   await page.getByRole('button', { name: 'Add grouping' }).click();
-  await groupBy.click();
+  await page.keyboard.press('Escape');
 }
 
 /** Reads the visible header coordinates to detect layout shifts. */
