@@ -42,3 +42,30 @@ for (const width of [375, 768, 1280]) {
     },
   );
 }
+
+test(
+  'toolbar controls use labeled dialogs with a close action on small screens',
+  /** Covers keyboard activation and focus return for each mobile toolbar dialog. */
+  async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 550 });
+    await page.goto('/tasks');
+    await selectAccount(page, 'user1');
+
+    for (const title of ['Group by', 'Sort', 'Filter', 'Table options']) {
+      const trigger = page.getByRole('button', { name: title, exact: true });
+      await expect(trigger).toHaveAttribute('aria-haspopup', 'dialog');
+      await trigger.press('Enter');
+
+      const dialog = page.getByRole('dialog', { name: title, exact: true });
+      await expect(dialog).toHaveAttribute('aria-modal', 'true');
+      const body = dialog.locator('[data-slot="body"]');
+      await expect(body).toHaveCSS('overflow-y', 'auto');
+      const close = dialog.locator('[data-slot="footer"]').getByRole('button', { name: 'Close', exact: true });
+      await expect(close).toBeInViewport();
+      await close.press('Space');
+
+      await expect(dialog).toBeHidden();
+      await expect(trigger).toBeFocused();
+    }
+  },
+);

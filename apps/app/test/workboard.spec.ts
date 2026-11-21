@@ -293,7 +293,7 @@ test(
     await expect(page).toHaveURL(/project=design&project=shared/);
     await expect(page.getByText('Showing 1–2 of 11')).toBeVisible();
 
-    await filters.getByRole('combobox', { name: 'Project', exact: true }).click();
+    await filters.getByRole('combobox', { name: 'Operator for Project', exact: true }).click();
     await page.getByRole('option', { name: '∉', exact: true }).click();
     await expect(page).toHaveURL(/projectOp=notIn/);
     await expect(page.getByText('Showing 1–2 of 7')).toBeVisible();
