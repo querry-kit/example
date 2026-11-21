@@ -59,6 +59,17 @@ test(
     await expect(table.getByRole('button', { name: / \d+ items$/, expanded: false })).toHaveCount(0);
     await expect(table.getByRole('link', { name: /^Open / })).toHaveCount(6);
     expect(await headers.evaluateAll(headerGeometry)).toEqual(collapsedGeometry);
+    const normal = table.getByRole('button', { name: 'NORMAL 1 items', exact: true }).first();
+    await expect(normal).toBeVisible();
+    expect(
+      await normal.evaluate(
+        /** Checks that the entire count fits inside the clipped group cell. */ (button) => {
+          const count = button.lastElementChild!.getBoundingClientRect();
+          const cell = button.closest('td')!.getBoundingClientRect();
+          return count.width > 0 && count.right <= cell.right;
+        },
+      ),
+    ).toBe(true);
     const group = table
       .getByRole('row')
       .filter({ has: page.getByRole('button', { name: 'OPEN 2 items', exact: true }) });
