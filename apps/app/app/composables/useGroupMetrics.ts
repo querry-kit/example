@@ -1,5 +1,5 @@
 import { andWhere, serializeQuery, type GroupPath } from '@querry-kit/nuxt';
-import { workItemAggregateQuerySchema, type WorkItemAggregate } from '@workboard/contracts';
+import { taskAggregateQuerySchema, type TaskAggregate } from '@workboard/contracts';
 import type { MaybeRefOrGetter } from 'vue';
 
 /**
@@ -13,7 +13,7 @@ export function useGroupMetrics(
   path: MaybeRefOrGetter<GroupPath>,
 ) {
   const { $workboardApi } = useNuxtApp();
-  const metrics = shallowRef<WorkItemAggregate>();
+  const metrics = shallowRef<TaskAggregate>();
   const loading = ref(false);
   const error = ref(false);
   let request = 0;
@@ -26,7 +26,7 @@ export function useGroupMetrics(
         /** Adds one equality predicate without converting a numeric group key to text. */
         ({ field, value }) => ({ [field]: { equals: value } }),
       );
-      return workItemAggregateQuerySchema.parse({
+      return taskAggregateQuerySchema.parse({
         where: andWhere(toValue(filter), ...branch),
         _sum: { estimatedHours: true },
         _avg: { estimatedHours: true },
@@ -44,8 +44,8 @@ export function useGroupMetrics(
     metrics.value = undefined;
     try {
       const params = query.value;
-      const response = await $workboardApi.get<WorkItemAggregate>(
-        `/work-items/aggregate${serializeQuery({ ...params, where: JSON.stringify(params.where ?? {}) })}`,
+      const response = await $workboardApi.get<TaskAggregate>(
+        `/tasks/aggregate${serializeQuery({ ...params, where: JSON.stringify(params.where ?? {}) })}`,
       );
       if (current === request) metrics.value = response.data;
     } catch {

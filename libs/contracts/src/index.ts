@@ -8,4 +8,6 @@ export * from './grouping.js';
 export * from './session.js';
 export * from './lookups.js';
 export * from './query.js';
-export * from './work-items.js';
+export * from './tasks.js';
+export * from './mutations.js';
+export * from './projects.js';

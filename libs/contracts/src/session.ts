@@ -8,7 +8,7 @@ export const accountRoleSchema = z.enum(['user', 'admin']);
 export const demoLoginInputSchema = z.strictObject({ login: demoLoginSchema });
 
 /** Top-level projection fields understood by Workboard. */
-export const workItemFieldSchema = z.enum([
+export const taskFieldSchema = z.enum([
   'id',
   'title',
   'status',
@@ -24,7 +24,7 @@ export const workItemFieldSchema = z.enum([
 ]);
 
 /** Scalar grouping keys supported by the API. */
-export const workItemGroupFieldSchema = z.enum(['status', 'priority', 'internalCostCents']);
+export const taskGroupFieldSchema = z.enum(['status', 'priority', 'internalCostCents']);
 
 /** Public account identity and capability hints; the API enforces them separately. */
 export const demoSessionSchema = z.strictObject({
@@ -32,11 +32,11 @@ export const demoSessionSchema = z.strictObject({
   login: demoLoginSchema,
   role: accountRoleSchema,
   displayName: z.string().min(1),
-  fields: z.array(workItemFieldSchema),
-  groupableFields: z.array(workItemGroupFieldSchema),
+  fields: z.array(taskFieldSchema),
+  groupableFields: z.array(taskGroupFieldSchema),
 });
 
 /** Schema-validated account response consumed by the demo selector and query UI. */
 export type DemoSession = z.infer<typeof demoSessionSchema>;
-/** A supported work item projection field. */
-export type WorkItemField = z.infer<typeof workItemFieldSchema>;
+/** A supported task projection field. */
+export type TaskField = z.infer<typeof taskFieldSchema>;

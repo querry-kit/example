@@ -5,9 +5,9 @@ export interface WorkboardFixtures {
   accounts: Prisma.AccountCreateManyInput[];
   profiles: Prisma.ProfileCreateManyInput[];
   projects: Prisma.ProjectCreateManyInput[];
-  items: Prisma.WorkItemCreateManyInput[];
+  items: Prisma.TaskCreateManyInput[];
   labels: Prisma.LabelCreateManyInput[];
-  itemLabels: Prisma.WorkItemLabelCreateManyInput[];
+  itemLabels: Prisma.TaskLabelCreateManyInput[];
 }
 
 const SAMPLE_DATE = new Date('2026-11-01T09:00:00.000Z');
@@ -18,11 +18,11 @@ function item(
   ownerId: string,
   projectId: string,
   title: string,
-  status: Prisma.WorkItemCreateManyInput['status'],
-  priority: Prisma.WorkItemCreateManyInput['priority'],
+  status: Prisma.TaskCreateManyInput['status'],
+  priority: Prisma.TaskCreateManyInput['priority'],
   estimatedHours: number,
   assigneeId: string | null = ownerId,
-): Prisma.WorkItemCreateManyInput {
+): Prisma.TaskCreateManyInput {
   return {
     id,
     ownerId,
@@ -38,8 +38,8 @@ function item(
   };
 }
 
-/** Stable synthetic rows used by the demo and its read-policy checks. */
-export const demoFixtures: WorkboardFixtures = {
+/** Stable synthetic rows used for exact counts and read-policy checks. */
+export const compactFixtures: WorkboardFixtures = {
   accounts: [
     { id: 'u1', login: 'user1', role: 'user' },
     { id: 'u2', login: 'user2', role: 'user' },
@@ -83,13 +83,107 @@ export const demoFixtures: WorkboardFixtures = {
     { id: 'ops', slug: 'ops', displayName: 'Operations' },
   ],
   itemLabels: [
-    { workItemId: 'u1-1', labelId: 'review' },
-    { workItemId: 'u1-1', labelId: 'ux' },
-    { workItemId: 'u1-4', labelId: 'ux' },
-    { workItemId: 'u2-1', labelId: 'review' },
-    { workItemId: 'u2-2', labelId: 'guide' },
-    { workItemId: 'u2-4', labelId: 'guide' },
-    { workItemId: 'a1', labelId: 'review' },
-    { workItemId: 'a6', labelId: 'ops' },
+    { taskId: 'u1-1', labelId: 'review' },
+    { taskId: 'u1-1', labelId: 'ux' },
+    { taskId: 'u1-4', labelId: 'ux' },
+    { taskId: 'u2-1', labelId: 'review' },
+    { taskId: 'u2-2', labelId: 'guide' },
+    { taskId: 'u2-4', labelId: 'guide' },
+    { taskId: 'a1', labelId: 'review' },
+    { taskId: 'a6', labelId: 'ops' },
+  ],
+};
+
+const teams = [
+  'Analytics',
+  'Billing',
+  'Customer Success',
+  'Design Systems',
+  'Engineering',
+  'Marketing',
+  'Platform',
+  'Support',
+];
+const initiatives = ['Accessibility', 'Automation', 'Insights', 'Onboarding', 'Reliability', 'Self-Service'];
+const activities = [
+  'Review requirements',
+  'Draft implementation notes',
+  'Map dependencies',
+  'Verify edge cases',
+  'Update examples',
+  'Resolve review feedback',
+  'Check keyboard navigation',
+  'Estimate delivery effort',
+  'Document rollout steps',
+  'Run the acceptance checks',
+  'Review empty states',
+  'Collect stakeholder feedback',
+  'Triage open issues',
+  'Improve status messaging',
+  'Validate reporting fields',
+  'Identify migration risks',
+  'Prepare the handover',
+  'Test with sample data',
+  'Review support requests',
+  'Verify recovery steps',
+  'Draft release notes',
+  'Check mobile layouts',
+];
+const statuses = ['OPEN', 'IN_PROGRESS', 'DONE', 'ARCHIVED'] as const;
+const priorities = ['LOW', 'NORMAL', 'HIGH'] as const;
+
+const projects = teams
+  .flatMap(
+    /** Builds distinct, readable project names from teams and initiatives. */
+    (team) => initiatives.map(/** Names one team initiative. */ (initiative) => `${team} ${initiative}`),
+  )
+  .slice(0, 50 - compactFixtures.projects.length)
+  .map(
+    /** Assigns a stable ID and a readable slug to each generated project. */
+    (title, index) => ({
+      id: `demo-project-${String(index + 1).padStart(2, '0')}`,
+      slug: title.toLowerCase().replaceAll(' ', '-'),
+      title,
+    }),
+  );
+
+const items = Array.from(
+  { length: 1_000 - compactFixtures.items.length },
+  /** Distributes tasks among projects, accounts, statuses, priorities and creation dates. */
+  (_, index) => {
+    const project = projects[index % projects.length];
+    const activity = Math.floor(index / projects.length);
+    const owner = compactFixtures.accounts[index % compactFixtures.accounts.length];
+    const id = `demo-task-${String(index + 1).padStart(4, '0')}`;
+    return {
+      ...item(
+        id,
+        owner.id,
+        project.id,
+        `${activities[activity]} · ${project.title}`,
+        statuses[(index + activity) % statuses.length],
+        priorities[(index + activity) % priorities.length],
+        1 + (index % 24),
+        index % 7 ? owner.id : null,
+      ),
+      createdAt: new Date(SAMPLE_DATE.getTime() + index * 3_600_000),
+    };
+  },
+);
+
+/** Full synthetic dataset for fresh Workboard databases. */
+export const demoFixtures: WorkboardFixtures = {
+  ...compactFixtures,
+  projects: [...compactFixtures.projects, ...projects],
+  items: [...compactFixtures.items, ...items],
+  itemLabels: [
+    ...compactFixtures.itemLabels,
+    ...items.flatMap(
+      /** Adds a mix of unlabeled, single-label, and multi-label tasks. */
+      ({ id: taskId }, index) =>
+        compactFixtures.labels
+          .slice(index % 4, (index % 4) + (index % 3))
+          .map(/** Links one existing demo label. */ ({ id: labelId }) => ({ taskId, labelId })),
+    ),
   ],
 };

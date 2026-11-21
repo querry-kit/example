@@ -11,7 +11,7 @@ export const wireIntegerSchema = z
   ])
   .pipe(z.number().int().safe());
 
-/** Project, label, and work-item IDs are opaque strings, not numeric identifiers. */
+/** Project, label, and task IDs are opaque strings, not numeric identifiers. */
 export const resourceIdSchema = z
   .string()
   .min(1)

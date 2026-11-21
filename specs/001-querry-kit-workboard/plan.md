@@ -53,7 +53,7 @@ compose.dev.yml              # PostgreSQL only
 compose.yml                  # PostgreSQL, API and Nuxt app
 ```
 
-**Structure Decision**: A plain pnpm workspace is sufficient. Nuxt serves the CRM-inspired responsive dashboard shell, with sidebar, navbar, account switcher, work item toolbar and table. Use `UDashboardGroup`, `UDashboardSidebar` and `UDashboardPanel`, sky/zinc semantic tokens, and Tabler icons. Site styles and data stay local; no CRM code, assets or dependency are needed.
+**Structure Decision**: A plain pnpm workspace is sufficient. Nuxt serves the CRM-inspired responsive dashboard shell, with sidebar, navbar, account switcher, task toolbar and table. Use `UDashboardGroup`, `UDashboardSidebar` and `UDashboardPanel`, sky/zinc semantic tokens, and Tabler icons. Site styles and data stay local; no CRM code, assets or dependency are needed.
 
 ## Design
 
@@ -67,7 +67,7 @@ Implement the [staged source strategy](research.md#local-package-provenance). Us
 
 | Area | UI demonstration | Direct API verification |
 | --- | --- | --- |
-| Nest `ResourceQuery`, fields and Zod query helpers | Work item list and detail; project, owner/profile and label projections | Requested vs default fields, nested/invalid fields, readable vs inaccessible ID, Fastify parser, generated OpenAPI; scoped `findOne`, `findUnique`, and unpaginated `findMany` alternatives covered at the service boundary without exposing redundant routes |
+| Nest `ResourceQuery`, fields and Zod query helpers | Task list and detail; project, owner/profile and label projections | Requested vs default fields, nested/invalid fields, readable vs inaccessible ID, Fastify parser, generated OpenAPI; scoped `findOne`, `findUnique`, and unpaginated `findMany` alternatives covered at the service boundary without exposing redundant routes |
 | Nest `QueryService`, CASL integration | Account switch: `user1` and `user2` see different owned rows; only `admin` sees all rows and internal columns | Scoped list/detail/lookup/count/aggregate/group; same-role cross-account denial; query operands and projection checked separately |
 | Nuxt `createApiClient`, `useModuleApi`, `useTable`, `useAutocomplete` | Search, project lookup, AND/OR filters, multi-sort, column order/visibility/pinning, paged or infinite loading where supported | Typed request serialization, response validation, page totals and stable tie-breaking |
 | Nuxt `useGroupedTable` and Nuxt UI toolbar/group components | Reorder status/priority levels, counts, expand/retry/load more, optional estimated-hour metrics | Nested branch filters, two-key grouping, `having`, group ordering/paging, count and all four optional metric operators |

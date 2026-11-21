@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
 import { orderDirectionSchema, wireIntegerSchema } from './query.js';
-import { workItemGroupFieldSchema } from './session.js';
-import { workItemPrioritySchema, workItemStatusSchema, workItemWhereSchema } from './work-items.js';
+import { taskGroupFieldSchema } from './session.js';
+import { taskPrioritySchema, taskStatusSchema, taskWhereSchema } from './tasks.js';
 
 const flag = z.union([
   z.literal(true),
@@ -23,8 +23,8 @@ const aggregateOptions = {
 };
 
 /** Shared metrics request; the UI supplies the active filter and a typed group path. */
-export const workItemAggregateQuerySchema = z
-  .strictObject({ where: workItemWhereSchema.optional(), ...aggregateOptions })
+export const taskAggregateQuerySchema = z
+  .strictObject({ where: taskWhereSchema.optional(), ...aggregateOptions })
   .refine(
     /** An aggregate must request at least one metric. Grouping alone uses the separate group endpoint. */
     ({ _count, _sum, _avg, _min, _max }) =>
@@ -48,20 +48,20 @@ const comparison = z.strictObject({
 });
 const metricComparison = z.strictObject({ _sum: comparison.optional(), _avg: comparison.optional() });
 const having = z.strictObject({
-  status: workItemStatusSchema.optional(),
-  priority: workItemPrioritySchema.optional(),
+  status: taskStatusSchema.optional(),
+  priority: taskPrioritySchema.optional(),
   estimatedHours: metricComparison.optional(),
   internalCostCents: comparison.extend(metricComparison.shape).optional(),
 });
 
 /** Scope-safe, bounded Prisma grouping surface exposed through the read endpoint. */
-export const workItemGroupQuerySchema = z.strictObject({
+export const taskGroupQuerySchema = z.strictObject({
   by: z
-    .array(workItemGroupFieldSchema)
+    .array(taskGroupFieldSchema)
     .min(1)
     .max(2)
     .refine(/** Rejects repeated grouping keys. */ (keys) => new Set(keys).size === keys.length),
-  where: workItemWhereSchema.optional(),
+  where: taskWhereSchema.optional(),
   orderBy: z.union([groupOrder, z.array(groupOrder).max(2)]).optional(),
   skip: wireIntegerSchema.pipe(z.number().int().min(0).max(10_000)).optional(),
   take: wireIntegerSchema.pipe(z.number().int().min(1).max(101)).optional(),
@@ -74,7 +74,7 @@ const metric = z.number().nonnegative().nullable().optional();
 const metricResponse = z.strictObject({ estimatedHours: metric, internalCostCents: metric });
 
 /** Prisma returns null rather than zero for a metric with no matching inputs. */
-export const workItemAggregateSchema = z.strictObject({
+export const taskAggregateSchema = z.strictObject({
   _count: z
     .strictObject({ _all: count.optional(), estimatedHours: count.optional(), internalCostCents: count.optional() })
     .optional(),
@@ -84,14 +84,14 @@ export const workItemAggregateSchema = z.strictObject({
   _max: metricResponse.optional(),
 });
 
-/** A group carries only requested keys and computed fields, not a work-item projection. */
-export const workItemGroupRowSchema = workItemAggregateSchema.extend({
-  status: workItemStatusSchema.optional(),
-  priority: workItemPrioritySchema.optional(),
+/** A group carries only requested keys and computed fields, not a task projection. */
+export const taskGroupRowSchema = taskAggregateSchema.extend({
+  status: taskStatusSchema.optional(),
+  priority: taskPrioritySchema.optional(),
   internalCostCents: count.optional(),
 });
 
 /** Public response array consumed by `useGroupedTable`. */
-export const workItemGroupsSchema = z.array(workItemGroupRowSchema);
+export const taskGroupsSchema = z.array(taskGroupRowSchema);
 /** Validated numeric group metrics shown by the dashboard. */
-export type WorkItemAggregate = z.infer<typeof workItemAggregateSchema>;
+export type TaskAggregate = z.infer<typeof taskAggregateSchema>;

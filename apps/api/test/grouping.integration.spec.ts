@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import { workItemAggregateSchema, workItemGroupsSchema, type DemoSession } from '@workboard/contracts';
+import { taskAggregateSchema, taskGroupsSchema, type DemoSession } from '@workboard/contracts';
 
 const base = process.env.WORKBOARD_TEST_API_URL ?? 'http://127.0.0.1:35463';
 const origin = process.env.WORKBOARD_TEST_APP_ORIGIN ?? 'http://127.0.0.1:3201';
@@ -21,7 +21,7 @@ async function signIn(login: DemoSession['login']): Promise<string> {
 
 /** Sends one read request with its expected status and returns its JSON. */
 async function read(cookie: string, query: string, status = 200) {
-  const response = await fetch(`${base}/api/work-items/${query}`, { headers: { Cookie: cookie } });
+  const response = await fetch(`${base}/api/tasks/${query}`, { headers: { Cookie: cookie } });
   const data = await response.json();
   assert.equal(response.status, status, `${query}: ${JSON.stringify(data)}`);
   return data;
@@ -44,11 +44,11 @@ test(
     ] as const) {
       const cookie = await signIn(login);
       assert.equal(await read(cookie, `count?where=${open}`), count);
-      assert.deepEqual(workItemGroupsSchema.parse(await read(cookie, `group-by?by[0]=status&where=${open}`)), [
+      assert.deepEqual(taskGroupsSchema.parse(await read(cookie, `group-by?by[0]=status&where=${open}`)), [
         { status: 'OPEN' },
       ]);
       assert.deepEqual(
-        workItemGroupsSchema.parse(await read(cookie, `group-by?by[0]=status&_count[_all]=true&where=${open}`)),
+        taskGroupsSchema.parse(await read(cookie, `group-by?by[0]=status&_count[_all]=true&where=${open}`)),
         [{ status: 'OPEN', _count: { _all: count } }],
       );
       const expected = {
@@ -58,8 +58,8 @@ test(
         _min: { estimatedHours: min },
         _max: { estimatedHours: max },
       };
-      assert.deepEqual(workItemAggregateSchema.parse(await read(cookie, `aggregate?${metrics}`)), expected);
-      assert.deepEqual(workItemGroupsSchema.parse(await read(cookie, `group-by?by[0]=status&${metrics}`)), [
+      assert.deepEqual(taskAggregateSchema.parse(await read(cookie, `aggregate?${metrics}`)), expected);
+      assert.deepEqual(taskGroupsSchema.parse(await read(cookie, `group-by?by[0]=status&${metrics}`)), [
         { status: 'OPEN', ...expected },
       ]);
     }
@@ -67,11 +67,11 @@ test(
     const user = await signIn('user1');
     const admin = await signIn('admin');
     const groups = 'group-by?by[0]=status&by[1]=priority&orderBy[priority]=desc&_count[_all]=true';
-    const all = workItemGroupsSchema.parse(await read(user, groups));
+    const all = taskGroupsSchema.parse(await read(user, groups));
     assert.ok(all.length >= 3);
-    assert.deepEqual(workItemGroupsSchema.parse(await read(user, `${groups}&skip=1&take=1`)), all.slice(1, 2));
+    assert.deepEqual(taskGroupsSchema.parse(await read(user, `${groups}&skip=1&take=1`)), all.slice(1, 2));
     assert.equal(
-      workItemGroupsSchema.parse(await read(user, 'group-by?by[0]=status&having[estimatedHours][_sum][gt]=5')).length,
+      taskGroupsSchema.parse(await read(user, 'group-by?by[0]=status&having[estimatedHours][_sum][gt]=5')).length,
       2,
     );
     assert.deepEqual(await read(user, 'aggregate?where[id]=001&_count[_all]=true&_sum[estimatedHours]=true'), {

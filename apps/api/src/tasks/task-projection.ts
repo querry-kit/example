@@ -2,7 +2,7 @@ import { subject } from '@casl/ability';
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { filterCaslFields } from '@querry-kit/nest/casl';
 import { Fields, FieldsBadRequestException, relation, type FieldSchema } from '@querry-kit/nest/fields';
-import type { WorkItem, WorkItemField } from '@workboard/contracts';
+import type { Task, TaskField } from '@workboard/contracts';
 
 import type { WorkboardAbility } from '../auth/workboard-ability.js';
 import type { Prisma } from '../generated/prisma/client.js';
@@ -11,7 +11,7 @@ const profile = relation({ displayName: true });
 const account = relation({ id: true, profile });
 
 /** Projection paths are public names, not raw Prisma selectors. */
-export const workItemFields = {
+export const taskFields = {
   id: true,
   title: true,
   status: true,
@@ -24,18 +24,18 @@ export const workItemFields = {
   labels: relation({ id: true, slug: true, displayName: true }),
   internalNote: true,
   internalCostCents: true,
-} satisfies Record<WorkItemField, FieldSchema[string]>;
+} satisfies Record<TaskField, FieldSchema[string]>;
 
 /** Explicit joins supporting the public projection shape, including labels through the link table. */
-export const workItemInclude = {
+export const taskInclude = {
   project: { select: { id: true, slug: true, title: true } },
   owner: { select: { id: true, profile: { select: { displayName: true } } } },
   assignee: { select: { id: true, profile: { select: { displayName: true } } } },
   labels: { select: { label: { select: { id: true, slug: true, displayName: true } } } },
-} satisfies Prisma.WorkItemInclude;
+} satisfies Prisma.TaskInclude;
 
-/** Work item with explicitly joined public relations before response mapping. */
-export type WorkItemRecord = Prisma.WorkItemGetPayload<{ include: typeof workItemInclude }>;
+/** Task with explicitly joined public relations before response mapping. */
+export type TaskRecord = Prisma.TaskGetPayload<{ include: typeof taskInclude }>;
 
 /**
  * Rejects explicit projection of a forbidden field before any query is issued.
@@ -44,9 +44,9 @@ export type WorkItemRecord = Prisma.WorkItemGetPayload<{ include: typeof workIte
  */
 export function checkProjection(fields: string | undefined, ability: WorkboardAbility): void {
   try {
-    const projection = Fields.parseAndValidate(fields, workItemFields);
+    const projection = Fields.parseAndValidate(fields, taskFields);
     for (const key of Object.keys(projection ?? {})) {
-      if (!ability.can('read', 'WorkItem', key)) throw new ForbiddenException(`Cannot project ${key}.`);
+      if (!ability.can('read', 'Task', key)) throw new ForbiddenException(`Cannot project ${key}.`);
     }
   } catch (error) {
     if (error instanceof FieldsBadRequestException) throw new BadRequestException('Invalid fields projection.');
@@ -59,8 +59,8 @@ export function checkProjection(fields: string | undefined, ability: WorkboardAb
  *
  * @see https://querry-kit.github.io/querry-kit/docs/nest/api/casl/
  */
-export function projectWorkItem(row: WorkItemRecord, ability: WorkboardAbility): WorkItem {
-  const dto: WorkItem = {
+export function projectTask(row: TaskRecord, ability: WorkboardAbility): Task {
+  const dto: Task = {
     id: row.id,
     title: row.title,
     status: row.status,
@@ -76,8 +76,8 @@ export function projectWorkItem(row: WorkItemRecord, ability: WorkboardAbility):
   };
 
   // The CASL condition needs the original owner ID, which is deliberately absent from the DTO.
-  const record = subject('WorkItem', row);
-  return filterCaslFields(dto, 'WorkItem', {
+  const record = subject('Task', row);
+  return filterCaslFields(dto, 'Task', {
     /** Evaluates against the real record instead of relying on the projected DTO's attributes. */
     can(action, _projected, field) {
       return action === 'read' && ability.can(action, record, field);
@@ -86,7 +86,7 @@ export function projectWorkItem(row: WorkItemRecord, ability: WorkboardAbility):
 }
 
 /** Keeps account internals private even if Querry Kit adds a relation include for a nested projection. */
-function publicPerson(person: WorkItemRecord['owner']) {
+function publicPerson(person: TaskRecord['owner']) {
   return {
     id: person.id,
     profile: person.profile ? { displayName: person.profile.displayName } : null,

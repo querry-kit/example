@@ -19,7 +19,7 @@ export class LookupsController {
   constructor(private readonly database: DatabaseService) {}
 
   /**
-   * Queries project options with the same pagination envelope as the work item list.
+   * Queries project options with the same pagination envelope as the task list.
    *
    * @see https://querry-kit.github.io/querry-kit/docs/nuxt/guide/autocomplete/
    */
@@ -36,7 +36,7 @@ export class LookupsController {
     return projectLookupPageSchema.parse({ items: result.items, meta: result.pageMeta });
   }
 
-  /** Queries only the labels reachable from work items in the active account's scope. */
+  /** Queries only the labels reachable from tasks in the active account's scope. */
   @Get('labels')
   @describeRead(lookupQuerySchema, labelLookupPageSchema)
   async labels(@Req() request: AuthenticatedRequest) {
