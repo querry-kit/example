@@ -70,6 +70,13 @@ test(
         },
       ),
     ).toBe(true);
+    const normalRow = normal.locator('xpath=ancestor::tr');
+    const rowBackground = await normalRow.evaluate(
+      /** Reads the group's background before hover. */ (row) => getComputedStyle(row).backgroundColor,
+    );
+    await normal.hover();
+    await expect(normalRow).not.toHaveCSS('background-color', rowBackground);
+    await expect(normal).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
     const group = table
       .getByRole('row')
       .filter({ has: page.getByRole('button', { name: 'OPEN 2 items', exact: true }) });
