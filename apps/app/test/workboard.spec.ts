@@ -282,6 +282,10 @@ test(
     const project = filters.getByRole('button', { name: 'Project', exact: true });
     await expect(project).toContainText('Design');
     await project.click();
+    await expect(page.getByRole('option', { name: 'Documentation', exact: true })).toBeVisible();
+    await page.getByPlaceholder('Search…', { exact: true }).fill('Workboard');
+    await expect(page.getByRole('option', { name: 'Documentation', exact: true })).toHaveCount(0);
+    await expect(page.getByRole('option', { name: 'Design', exact: true })).toHaveAttribute('aria-selected', 'true');
     await page.getByRole('option', { name: 'Workboard', exact: true }).click();
     await page.keyboard.press('Escape');
     await expect(project).toContainText('Design');
