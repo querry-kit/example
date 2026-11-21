@@ -3,20 +3,16 @@ import { refDebounced } from '@vueuse/core';
 import type { ProjectLookup } from '@workboard/contracts';
 import type { Ref } from 'vue';
 
+import { projectSearchQuery } from '~/utils/project-lookup';
+
 /** Keeps selected project titles available while searching the permitted project list. */
-export function useProjectLookup(
-  selection: Ref<string | undefined> | Ref<string[]>,
-  itemDisabled?: (item: ProjectLookup) => boolean,
-) {
+export function useProjectLookup(selection: Ref<string | undefined>) {
   const search = ref('');
   const debounced = refDebounced(search, 250);
   const { $workboardApi } = useNuxtApp();
   const query = computed(
     /** Searches project titles without filtering the separately hydrated selection. */
-    () => {
-      const title = debounced.value.trim().slice(0, 160);
-      return title ? { where: { title: { contains: title, mode: 'insensitive' } }, perPage: 10 } : { perPage: 10 };
-    },
+    () => projectSearchQuery(debounced.value),
   );
   const source = { api: $workboardApi, endpoint: 'projects' };
   const results = useAutocomplete<ProjectLookup>({ ...source, query });
@@ -28,12 +24,7 @@ export function useProjectLookup(
     () => {
       const byId = new Map<string, ProjectLookup>();
       for (const item of [...selected.currentValueItems.value, ...results.items.value]) byId.set(item.id, item);
-      return [...byId.values()].map(
-        /** Applies the current selection limit. */ (item) => ({
-          ...item,
-          disabled: itemDisabled?.(item),
-        }),
-      );
+      return [...byId.values()];
     },
   );
   return {

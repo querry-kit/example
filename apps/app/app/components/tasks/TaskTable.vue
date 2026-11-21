@@ -172,17 +172,25 @@ import {
   FilteringFieldOperator,
   type ColumnDefinition,
   type FilterField,
+  type FilterLookupSource,
   type Filtering,
   type GroupedTableColumn,
   type GroupingField,
   type SortingField,
 } from '@querry-kit/nuxt-ui/types';
 import { createReusableTemplate, refDebounced } from '@vueuse/core';
-import { projectFilterLimit, resourceIdSchema, type DemoSession, type Task } from '@workboard/contracts';
+import {
+  projectFilterLimit,
+  resourceIdSchema,
+  type DemoSession,
+  type ProjectLookup,
+  type Task,
+} from '@workboard/contracts';
 
-import ProjectFilter from '~/components/tasks/ProjectFilter.vue';
+import { QTableFilterLookup } from '#components';
 
 import { taskTableUi, type GroupItemColumn } from '~/utils/group-table';
+import { projectSearchQuery } from '~/utils/project-lookup';
 import { taskFilterFields, taskStaticWhere } from '~/utils/task-controls';
 
 const props = defineProps<{ session: DemoSession }>();
@@ -296,6 +304,32 @@ const projectFilter = computed(
       /** Finds the project ID rule. */ (rule) => rule.field === projectField,
     ),
 );
+const projects = useWorkboardResources('projects');
+const projectLookup: FilterLookupSource = {
+  /** Searches projects through the active account's existing lookup endpoint. */
+  async search(term) {
+    const { data } = await projects.query(projectSearchQuery(term));
+    return projectOptions(data.items);
+  },
+  /** Hydrates bookmarked and selected project IDs separately from the search. */
+  async resolve(values) {
+    const ids = projectIds(values);
+    if (!ids.length) return [];
+    const { data } = await projects.query({ where: { id: { in: ids } }, perPage: projectFilterLimit });
+    return projectOptions(data.items);
+  },
+};
+
+/** Converts Workboard projects to labelled filter choices. */
+function projectOptions(items: ProjectLookup[]) {
+  return items.map(
+    /** Maps a project to its public ID and title. */ ({ id, title }) => ({
+      value: id,
+      label: title,
+    }),
+  );
+}
+
 const filterFields = computed<FilterField[]>(
   /** Allows one project rule with multiple project IDs. */
   () => [
@@ -303,7 +337,12 @@ const filterFields = computed<FilterField[]>(
       value: projectField,
       label: 'Project',
       type: 'select',
-      component: ProjectFilter,
+      component: QTableFilterLookup,
+      componentProps: {
+        source: projectLookup,
+        maxSelections: projectFilterLimit,
+        texts: { filtering: { lookupPlaceholder: 'Select projects', lookupError: 'Projects could not be loaded.' } },
+      },
       disabled: Boolean(projectFilter.value),
     },
     ...taskFilterFields,
