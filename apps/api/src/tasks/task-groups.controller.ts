@@ -10,10 +10,9 @@ import {
 import { createWorkboardAbility, type WorkboardAbility } from '../auth/workboard-ability.js';
 import { DatabaseService } from '../database/database.service.js';
 import { type AuthenticatedRequest, DemoSessionGuard } from '../demo/demo-session.guard.js';
-import type { Prisma } from '../generated/prisma/client.js';
 import { describeRead } from '../query/query-docs.js';
 import { readQuery } from '../query/query-parser.js';
-import { accessibleWhere, createScopedQuery } from '../query/scoped-query.js';
+import { createScopedQuery } from '../query/scoped-query.js';
 import { checkTaskWhere } from './tasks.service.js';
 
 /** Rejects recognized private fields wherever an operation could use them to derive public results. */
@@ -102,21 +101,7 @@ export class TaskGroupsController {
     checkTaskWhere(input.where, ability);
     checkMetrics(ability, [input._count, input._sum, input._avg, input._min, input._max]);
 
-    // Unlike groupBy and count, QueryService.aggregate has no ability parameter.
-    const scopedWhere: Prisma.TaskWhereInput = {
-      AND: [accessibleWhere(ability, 'Task') as Prisma.TaskWhereInput, input.where ?? {}],
-    };
-    const scoped = this.database.$extends({
-      query: {
-        task: {
-          /** Restores the validated filter after Query Kit's generic scalar coercion (e.g. an ID of "001"). */
-          aggregate({ args, query }) {
-            return query({ ...args, where: scopedWhere });
-          },
-        },
-      },
-    });
-    const result = await createScopedQuery(scoped.task, 'Task').aggregate({ ...input, where: scopedWhere });
+    const result = await createScopedQuery(this.database.task, 'Task').aggregate(input, ability);
     return taskAggregateSchema.parse(result);
   }
 }
