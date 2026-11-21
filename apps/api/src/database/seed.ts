@@ -19,18 +19,18 @@ export async function seedWorkboard(
         db.account.findFirst({ select: { id: true } }),
         db.profile.findFirst({ select: { accountId: true } }),
         db.project.findFirst({ select: { id: true } }),
-        db.workItem.findFirst({ select: { id: true } }),
+        db.task.findFirst({ select: { id: true } }),
         db.label.findFirst({ select: { id: true } }),
-        db.workItemLabel.findFirst({ select: { workItemId: true } }),
+        db.taskLabel.findFirst({ select: { taskId: true } }),
       ]);
       if (existing.some(Boolean)) return false;
 
       await db.account.createMany({ data: fixtures.accounts });
       await db.profile.createMany({ data: fixtures.profiles });
       await db.project.createMany({ data: fixtures.projects });
-      await db.workItem.createMany({ data: fixtures.items });
+      await db.task.createMany({ data: fixtures.items });
       await db.label.createMany({ data: fixtures.labels });
-      await db.workItemLabel.createMany({ data: fixtures.itemLabels });
+      await db.taskLabel.createMany({ data: fixtures.itemLabels });
       return true;
     },
     { timeout: 15_000 },

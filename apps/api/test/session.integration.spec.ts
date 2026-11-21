@@ -86,15 +86,15 @@ test(
         [user2, ['u2-1', 'u2-2', 'u2-3', 'u2-4', 'u2-5', 'u2-6']],
       ] as const) {
         const ability = createWorkboardAbility(session);
-        const where = resolveWhere(ability, 'WorkItem') as Prisma.WorkItemWhereInput;
+        const where = resolveWhere(ability, 'Task') as Prisma.TaskWhereInput;
         assert.deepEqual(
-          await database.workItem.findMany({ where, select: { id: true }, orderBy: { id: 'asc' } }),
+          await database.task.findMany({ where, select: { id: true }, orderBy: { id: 'asc' } }),
           expected.map(/** Converts expected ids to projected test rows. */ (id) => ({ id })),
         );
       }
 
-      const where = resolveWhere(createWorkboardAbility(admin), 'WorkItem') as Prisma.WorkItemWhereInput;
-      assert.equal(await database.workItem.count({ where }), 18);
+      const where = resolveWhere(createWorkboardAbility(admin), 'Task') as Prisma.TaskWhereInput;
+      assert.equal(await database.task.count({ where }), 18);
     } finally {
       await database.$disconnect();
     }

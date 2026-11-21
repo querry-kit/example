@@ -1,22 +1,19 @@
 <template>
-  <UFormField label="Project">
-    <div class="flex items-center gap-2">
-      <USelectMenu
-        v-model="project"
-        v-model:search-term="search"
-        value-key="id"
-        label-key="title"
-        placeholder="All projects"
-        aria-label="Project"
-        :items="items"
-        :loading="loading"
-        ignore-filter
-      />
-      <UButton v-if="project" color="neutral" variant="link" label="Clear project" @click="clear" />
-    </div>
-    <p v-if="error" role="status" class="mt-1 text-sm text-error">
-      Projects could not be loaded.
-    </p>
+  <UFormField label="Project" :name="name" :required="Boolean(name)">
+    <USelectMenu
+      v-model="project"
+      v-model:search-term="search"
+      size="sm"
+      value-key="id"
+      label-key="title"
+      aria-label="Project"
+      class="w-full"
+      placeholder="Select a project"
+      :items="items"
+      :loading="loading"
+      ignore-filter
+    />
+    <span v-if="error" role="status" class="mt-1 block text-sm text-error">Projects could not be loaded.</span>
   </UFormField>
 </template>
 
@@ -25,6 +22,7 @@ import { useAutocomplete } from '@querry-kit/nuxt';
 import { refDebounced } from '@vueuse/core';
 import type { ProjectLookup } from '@workboard/contracts';
 
+defineProps<{ name?: string }>();
 const project = defineModel<string>();
 const search = ref('');
 const debounced = refDebounced(search, 250);
@@ -46,9 +44,4 @@ const { items, loading, error } = useAutocomplete<ProjectLookup>({
   currentValue: project,
   query,
 });
-
-/** Clears the relation filter without altering the remaining table state. */
-function clear(): void {
-  project.value = undefined;
-}
 </script>

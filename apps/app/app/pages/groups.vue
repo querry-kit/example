@@ -1,7 +1,10 @@
 <template>
-  <WorkItemsGroupedWorkItems v-if="activeSession" :key="activeSession.id" :session="activeSession" />
+  <div />
 </template>
 
 <script setup lang="ts">
-const { activeSession } = useDemoSession();
+definePageMeta({
+  /** Keeps existing group bookmarks working after merging the views. */
+  middleware: (to) => navigateTo({ path: '/tasks', query: to.query, hash: to.hash }, { redirectCode: 302 }),
+});
 </script>

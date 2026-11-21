@@ -12,10 +12,10 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { DatabaseModule } from './database/database.module.js';
 import { DemoModule } from './demo/demo.module.js';
 import { HealthController } from './health/health.controller.js';
-import { WorkboardReadsModule } from './work-items/workboard-reads.module.js';
+import { WorkboardResourcesModule } from './tasks/workboard-resources.module.js';
 
 /** API composition root. Domain and infrastructure modules are registered here. */
-@Module({ imports: [DatabaseModule, DemoModule, WorkboardReadsModule], controllers: [HealthController] })
+@Module({ imports: [DatabaseModule, DemoModule, WorkboardResourcesModule], controllers: [HealthController] })
 class AppModule {}
 
 /**
@@ -31,7 +31,7 @@ async function bootstrap(): Promise<void> {
   await app.getHttpAdapter().getInstance().register(fastifyCookie, { secret });
   app.setGlobalPrefix('api');
 
-  // Interface definitions use the same Zod schemas as the runtime read boundary.
+  // Interface definitions use the same Zod schemas as the runtime validation.
   // https://querry-kit.github.io/querry-kit/docs/nest/api/openapi/
   const doc = new DocumentBuilder()
     .setTitle('Querry Kit Workboard')

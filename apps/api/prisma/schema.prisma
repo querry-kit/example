@@ -15,26 +15,30 @@ enum AccountRole {
   admin
 }
 
-enum WorkItemStatus {
+enum TaskStatus {
   OPEN
   IN_PROGRESS
   DONE
   ARCHIVED
+
+  @@map("WorkItemStatus")
 }
 
-enum WorkItemPriority {
+enum TaskPriority {
   LOW
   NORMAL
   HIGH
+
+  @@map("WorkItemPriority")
 }
 
 model Account {
-  id            String     @id
-  login         String     @unique
+  id            String      @id
+  login         String      @unique
   role          AccountRole
   profile       Profile?
-  ownedItems    WorkItem[] @relation("Owner")
-  assignedItems WorkItem[] @relation("Assignee")
+  ownedTasks    Task[]      @relation("Owner")
+  assignedTasks Task[]      @relation("Assignee")
 }
 
 model Profile {
@@ -44,46 +48,48 @@ model Profile {
 }
 
 model Project {
-  id        String     @id
-  slug      String     @unique
-  title     String
-  workItems WorkItem[]
+  id    String @id
+  slug  String @unique
+  title String
+  tasks Task[]
 }
 
-model WorkItem {
-  id                String           @id
+model Task {
+  id                String       @id
   projectId         String
   ownerId           String
   assigneeId        String?
   title             String
-  status            WorkItemStatus
-  priority          WorkItemPriority
+  status            TaskStatus
+  priority          TaskPriority
   estimatedHours    Int
   internalNote      String
   internalCostCents Int
   createdAt         DateTime
-  project           Project          @relation(fields: [projectId], references: [id])
-  owner             Account          @relation("Owner", fields: [ownerId], references: [id])
-  assignee          Account?         @relation("Assignee", fields: [assigneeId], references: [id])
-  labels            WorkItemLabel[]
+  project           Project      @relation(fields: [projectId], references: [id])
+  owner             Account      @relation("Owner", fields: [ownerId], references: [id])
+  assignee          Account?     @relation("Assignee", fields: [assigneeId], references: [id])
+  labels            TaskLabel[]
 
   @@index([ownerId, projectId])
   @@index([projectId])
+  @@map("WorkItem")
 }
 
 model Label {
-  id          String          @id
-  slug        String          @unique
+  id          String      @id
+  slug        String      @unique
   displayName String
-  workItems   WorkItemLabel[]
+  tasks       TaskLabel[]
 }
 
-model WorkItemLabel {
-  workItemId String
-  labelId    String
-  workItem   WorkItem @relation(fields: [workItemId], references: [id])
-  label      Label    @relation(fields: [labelId], references: [id])
+model TaskLabel {
+  taskId  String @map("workItemId")
+  labelId String
+  task    Task   @relation(fields: [taskId], references: [id])
+  label   Label  @relation(fields: [labelId], references: [id])
 
-  @@id([workItemId, labelId])
+  @@id([taskId, labelId])
   @@index([labelId])
+  @@map("WorkItemLabel")
 }

@@ -10,13 +10,13 @@
 
 ## User Scenarios & Testing
 
-### User Story 1 - Explore relational work items (Priority: P1)
+### User Story 1 - Explore relational tasks (Priority: P1)
 
-Visitors start a seeded demo from the example checkout and use its dashboard to explore work items, their projects, owners and labels.
+Visitors start a seeded demo from the example checkout and use its dashboard to explore tasks, their projects, owners and labels.
 
 **Why this priority**: The demo must be usable without setup in the package repositories.
 
-**Independent Test**: Start the test stack with an empty volume. Select `user1`, open the work items view, look up a project, combine filters and sorts, configure columns, page through the results and open a detail view.
+**Independent Test**: Start the test stack with an empty volume. Switch to `user1` in the navbar, open the tasks view, look up a project, combine filters and sorts, configure columns, page through the results and open a detail view.
 
 **Acceptance Scenarios**:
 
@@ -39,7 +39,7 @@ Visitors switch between `user1`, `user2` and `admin` without entering a password
 
 ### User Story 3 - Compare grouping and reported totals (Priority: P2)
 
-Visitors group matching work items by one or two ordered keys, expand branches and optionally display numeric summaries.
+Visitors group matching tasks by one or two ordered keys, expand branches and optionally display numeric summaries.
 
 **Why this priority**: The example demonstrates grouping separately from aggregate metrics and from client-side grouping of the current page.
 
@@ -70,7 +70,7 @@ Developers can trace one working read request from shared validation through the
 
 **Why this priority**: The code and docs are teaching material, not just a feature showcase.
 
-**Independent Test**: From a fresh copy, follow the adaptation guide to add a public work-item field to the contract, Prisma model and UI; run the documented checks without changing an upstream checkout.
+**Independent Test**: From a fresh copy, follow the adaptation guide to add a public task field to the contract, Prisma model and UI; run the documented checks without changing an upstream checkout.
 
 **Acceptance Scenarios**:
 
@@ -88,9 +88,9 @@ Developers can trace one working read request from shared validation through the
 
 ### Functional Requirements
 
-- **FR-001**: Provide a read-only dashboard inspired by the CRM shell, with a work-item list, details and grouping view; domain create, update and delete are out of scope.
+- **FR-001**: Provide a dashboard inspired by the CRM shell, with project and task lists, task details, and grouping. The admin can maintain projects and all tasks. Regular accounts can maintain their own tasks in visible projects. Deletion requires confirmation, and projects with tasks cannot be deleted.
 - **FR-002**: Demonstrate 1:1, 1:n and m:n relationships with connected fixtures and selectable related fields.
-- **FR-003**: Offer exactly three demo logins (`user1`, `user2`, `admin`), no password input, and a switch accessible from the dashboard. `user1` and `user2` share the same role; row ownership is determined by the active account ID.
+- **FR-003**: Offer exactly three demo logins (`user1`, `user2`, `admin`), default new browser sessions to `admin`, and provide account switching in the navbar. `user1` and `user2` share the same role; row ownership is determined by the active account ID.
 - **FR-004**: Enforce different row visibility and field visibility on the server, including derived results and relation lookups.
 - **FR-005**: Demonstrate search/autocomplete, scalar and relation filters, multi-sort, column selection and server pagination.
 - **FR-006**: Demonstrate server grouping with optional aggregations, ordered levels, branch expansion and more results.
@@ -105,8 +105,8 @@ Developers can trace one working read request from shared validation through the
 ### Key Entities
 
 - **Account and Profile**: Demo identity and its one-to-one presentation data.
-- **Project and Work Item**: One project has many work items; an account may own multiple items.
-- **Label**: A work item may have multiple labels, and a label may be used by multiple items.
+- **Project and Task**: One project has many tasks; an account may own multiple items.
+- **Label**: A task may have multiple labels, and a label may be used by multiple items.
 
 ## Success Criteria
 

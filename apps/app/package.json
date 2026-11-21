@@ -8,7 +8,7 @@
     "typecheck": "nuxt typecheck",
     "test:workboard": "playwright test --config playwright.config.ts workboard.spec.ts",
     "test:account-switch": "playwright test --config playwright.config.ts account-switch.spec.ts",
-    "test:grouping": "playwright test --config playwright.config.ts grouped-work-items.spec.ts"
+    "test:grouping": "playwright test --config playwright.config.ts grouped-tasks.spec.ts"
   },
   "dependencies": {
     "@iconify-json/lucide": "1.2.156",

@@ -13,7 +13,8 @@
     "test:session": "tsx --test test/session.integration.spec.ts",
     "test:reads": "tsx --test test/reads.integration.spec.ts",
     "test:access": "tsx --test test/access.integration.spec.ts",
-    "test:grouping": "tsx --test test/grouping.integration.spec.ts"
+    "test:grouping": "tsx --test test/grouping.integration.spec.ts",
+    "test:writes": "tsx --test test/writes.integration.spec.ts"
   },
   "dependencies": {
     "@casl/ability": "7.1.1",

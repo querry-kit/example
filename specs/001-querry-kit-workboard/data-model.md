@@ -2,11 +2,11 @@
 
 | Entity | Fields and constraints | Relationships |
 | --- | --- | --- |
-| Account | Stable ID, unique login (`user1`, `user2`, `admin`), role (`user` or `admin`) | One profile; owns many work items |
+| Account | Stable ID, unique login (`user1`, `user2`, `admin`), role (`user` or `admin`) | One profile; owns many tasks |
 | Profile | Unique account FK, display name | Exactly one seeded profile per account (1:1) |
-| Project | Stable ID, unique slug, title | One project has many work items (1:n) |
-| WorkItem | Stable ID, project FK, owner FK, optional assignee FK, title, status enum, priority enum, nonnegative integer `estimatedHours`, admin-only `internalNote` and nonnegative `internalCostCents`, creation timestamp | One project; one owner; optional assignee; many labels |
-| Label | Stable ID, unique slug, display name | Many work items (m:n) via join table with unique item/label pairs |
+| Project | Stable ID, unique slug, title | One project has many tasks (1:n) |
+| Task | Stable ID, project FK, owner FK, optional assignee FK, title, status enum, priority enum, nonnegative integer `estimatedHours`, admin-only `internalNote` and nonnegative `internalCostCents`, creation timestamp | One project; one owner; optional assignee; many labels |
+| Label | Stable ID, unique slug, display name | Many tasks (m:n) via join table with unique item/label pairs |
 
 Use indexes on owner/project identifiers and on query paths where the reviewed migration and fixtures justify them. Use existing PostgreSQL/Prisma relationship constraints for referential integrity; no mutation workflow or public raw database arguments.
 
@@ -15,9 +15,9 @@ Use indexes on owner/project identifiers and on query paths where the reviewed m
 - `Account`: `id`, `login`, `role`.
 - `Profile`: `accountId`, `displayName`.
 - `Project`: `id`, `slug`, `title`.
-- `WorkItem`: `id`, `projectId`, `ownerId`, `assigneeId`, `title`, `status`, `priority`, `estimatedHours`, `internalNote`, `internalCostCents`, `createdAt`.
+- `Task`: `id`, `projectId`, `ownerId`, `assigneeId`, `title`, `status`, `priority`, `estimatedHours`, `internalNote`, `internalCostCents`, `createdAt`.
 - `Label`: `id`, `slug`, `displayName`.
-- `WorkItemLabel`: `workItemId`, `labelId`; both are foreign keys and the pair is unique.
+- `TaskLabel`: `taskId`, `labelId`; both are foreign keys and the pair is unique.
 
 ## Fixtures and visibility
 

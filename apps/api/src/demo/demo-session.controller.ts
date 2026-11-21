@@ -1,27 +1,10 @@
-import {
-  BadRequestException,
-  Body,
-  Controller,
-  ForbiddenException,
-  Get,
-  HttpCode,
-  Post,
-  Req,
-  Res,
-  UseGuards,
-} from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, HttpCode, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { demoLoginInputSchema, type DemoSession } from '@workboard/contracts';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 
+import { demoOrigin, requireDemoOrigin } from './demo-origin.js';
 import { type AuthenticatedRequest, DemoSessionGuard } from './demo-session.guard.js';
 import { demoSessionCookie, demoSessionMaxAgeSeconds, DemoSessionService } from './demo-session.service.js';
-
-/** The configured browser origin for this demo; independent of forwarded headers. */
-const demoOrigin = process.env.DEMO_ORIGIN ?? 'http://127.0.0.1:3201';
-const loopbackOrigin = /^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/.exec(demoOrigin);
-const alternateDemoOrigin = loopbackOrigin
-  ? `http://${loopbackOrigin[1] === 'localhost' ? '127.0.0.1' : 'localhost'}${loopbackOrigin[2] ?? ''}`
-  : undefined;
 
 /** Local-only persona selection. Replace this controller with real authentication when adopting the example. */
 @Controller('demo/session')
@@ -38,9 +21,7 @@ export class DemoSessionController {
     @Res({ passthrough: true }) reply: FastifyReply,
   ): Promise<DemoSession> {
     reply.header('Cache-Control', 'no-store');
-    const origin = request.headers.origin;
-    if (!origin || (origin !== demoOrigin && origin !== alternateDemoOrigin))
-      throw new ForbiddenException('Demo login requires the configured origin.');
+    requireDemoOrigin(request, 'Demo login requires the configured origin.');
 
     const parsed = demoLoginInputSchema.safeParse(input);
     if (!parsed.success) throw new BadRequestException('Select user1, user2, or admin.');

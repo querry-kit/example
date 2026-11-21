@@ -1,12 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import {
-  labelLookupPageSchema,
-  projectLookupPageSchema,
-  workItemPageSchema,
-  type DemoSession,
-} from '@workboard/contracts';
+import { labelLookupPageSchema, projectLookupPageSchema, taskPageSchema, type DemoSession } from '@workboard/contracts';
 
 const base = process.env.WORKBOARD_TEST_API_URL ?? 'http://127.0.0.1:35463';
 const origin = process.env.WORKBOARD_TEST_APP_ORIGIN ?? 'http://127.0.0.1:3201';
@@ -42,18 +37,18 @@ test(
       [user1, 'u1', 'u2'],
       [user2, 'u2', 'u1'],
     ] as const) {
-      const page = workItemPageSchema.parse(await read(cookie, 'work-items?fields=id&perPage=100'));
+      const page = taskPageSchema.parse(await read(cookie, 'tasks?fields=id&perPage=100'));
       assert.deepEqual(
         page.items.map(/** Extracts the exact visible IDs, not just a count. */ (item) => item.id),
         [1, 2, 3, 4, 5, 6].map(
           /** Constructs the expected independent ID set from fixture labels. */ (n) => `${prefix}-${n}`,
         ),
       );
-      await read(cookie, `work-items/${other}-1`, 404);
-      await read(cookie, `work-items/find-by-id/${other}-1`, 404);
-      await read(cookie, 'work-items?fields=internalCostCents', 403);
-      await read(cookie, 'work-items?where[internalNote][contains]=demo', 403);
-      await read(cookie, 'work-items?orderBy[internalCostCents]=asc', 403);
+      await read(cookie, `tasks/${other}-1`, 404);
+      await read(cookie, `tasks/find-by-id/${other}-1`, 404);
+      await read(cookie, 'tasks?fields=internalCostCents', 403);
+      await read(cookie, 'tasks?where[internalNote][contains]=demo', 403);
+      await read(cookie, 'tasks?orderBy[internalCostCents]=asc', 403);
     }
 
     const firstProjects = projectLookupPageSchema.parse(await read(user1, 'projects'));
@@ -71,9 +66,7 @@ test(
       secondLabels.items.map(/** Extracts label identifiers. */ (label) => label.id),
       ['guide', 'review'],
     );
-    const privileged = workItemPageSchema.parse(
-      await read(admin, 'work-items?fields=id,internalCostCents&perPage=100'),
-    );
+    const privileged = taskPageSchema.parse(await read(admin, 'tasks?fields=id,internalCostCents&perPage=100'));
     assert.equal(privileged.meta.itemCount, 18);
     assert.equal(
       privileged.items.find(/** Selects the admin-only fixture. */ (item) => item.id === 'a6')?.internalCostCents,

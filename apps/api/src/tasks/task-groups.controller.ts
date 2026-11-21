@@ -1,10 +1,10 @@
 import { BadRequestException, Controller, ForbiddenException, Get, Req, UseGuards } from '@nestjs/common';
 import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
 import {
-  workItemAggregateQuerySchema,
-  workItemAggregateSchema,
-  workItemGroupQuerySchema,
-  workItemGroupsSchema,
+  taskAggregateQuerySchema,
+  taskAggregateSchema,
+  taskGroupQuerySchema,
+  taskGroupsSchema,
 } from '@workboard/contracts';
 
 import { createWorkboardAbility, type WorkboardAbility } from '../auth/workboard-ability.js';
@@ -14,12 +14,12 @@ import type { Prisma } from '../generated/prisma/client.js';
 import { describeRead } from '../query/query-docs.js';
 import { readQuery } from '../query/query-parser.js';
 import { accessibleWhere, createScopedQuery } from '../query/scoped-query.js';
-import { checkWorkItemWhere } from './work-items.service.js';
+import { checkTaskWhere } from './tasks.service.js';
 
 /** Rejects recognized private fields wherever an operation could use them to derive public results. */
 function checkOperands(ability: WorkboardAbility, keys: readonly string[]): void {
   for (const key of keys) {
-    if (key !== '_all' && !ability.can('read', 'WorkItem', key)) {
+    if (key !== '_all' && !ability.can('read', 'Task', key)) {
       throw new ForbiddenException(`Cannot compute results using ${key}.`);
     }
   }
@@ -31,11 +31,11 @@ function checkMetrics(ability: WorkboardAbility, selectors: Array<object | undef
 }
 
 /** Read-only server-side grouping and optional Workboard metrics. */
-@ApiTags('Work items')
+@ApiTags('Tasks')
 @ApiCookieAuth('workboard_demo')
 @UseGuards(DemoSessionGuard)
-@Controller('work-items')
-export class WorkItemGroupsController {
+@Controller('tasks')
+export class TaskGroupsController {
   /** Receives the same Prisma delegate used for list, detail and count. */
   constructor(private readonly database: DatabaseService) {}
 
@@ -46,11 +46,11 @@ export class WorkItemGroupsController {
    * @see https://querry-kit.github.io/querry-kit/docs/nuxt-ui/components/grouping/
    */
   @Get('group-by')
-  @describeRead(workItemGroupQuerySchema, workItemGroupsSchema)
+  @describeRead(taskGroupQuerySchema, taskGroupsSchema)
   async groupBy(@Req() request: AuthenticatedRequest) {
-    const input = readQuery(request, workItemGroupQuerySchema);
+    const input = readQuery(request, taskGroupQuerySchema);
     const ability = createWorkboardAbility(request.demoSession);
-    checkWorkItemWhere(input.where, ability);
+    checkTaskWhere(input.where, ability);
     checkOperands(ability, input.by);
     checkOperands(ability, Object.keys(input.having ?? {}));
     checkMetrics(ability, [input._count, input._sum, input._avg, input._min, input._max]);
@@ -84,8 +84,8 @@ export class WorkItemGroupsController {
       );
       if (scalarKeys.length) throw new BadRequestException('Scalar having filters must use a grouping key.');
     }
-    const result = await createScopedQuery(this.database.workItem, 'WorkItem').groupBy({ ...input, orderBy }, ability);
-    return workItemGroupsSchema.parse(result);
+    const result = await createScopedQuery(this.database.task, 'Task').groupBy({ ...input, orderBy }, ability);
+    return taskGroupsSchema.parse(result);
   }
 
   /**
@@ -95,20 +95,20 @@ export class WorkItemGroupsController {
    * @see https://querry-kit.github.io/querry-kit/docs/nest/api/casl/
    */
   @Get('aggregate')
-  @describeRead(workItemAggregateQuerySchema, workItemAggregateSchema)
+  @describeRead(taskAggregateQuerySchema, taskAggregateSchema)
   async aggregate(@Req() request: AuthenticatedRequest) {
-    const input = readQuery(request, workItemAggregateQuerySchema);
+    const input = readQuery(request, taskAggregateQuerySchema);
     const ability = createWorkboardAbility(request.demoSession);
-    checkWorkItemWhere(input.where, ability);
+    checkTaskWhere(input.where, ability);
     checkMetrics(ability, [input._count, input._sum, input._avg, input._min, input._max]);
 
     // Unlike groupBy and count, QueryService.aggregate has no ability parameter.
-    const scopedWhere: Prisma.WorkItemWhereInput = {
-      AND: [accessibleWhere(ability, 'WorkItem') as Prisma.WorkItemWhereInput, input.where ?? {}],
+    const scopedWhere: Prisma.TaskWhereInput = {
+      AND: [accessibleWhere(ability, 'Task') as Prisma.TaskWhereInput, input.where ?? {}],
     };
     const scoped = this.database.$extends({
       query: {
-        workItem: {
+        task: {
           /** Restores the validated filter after Query Kit's generic scalar coercion (e.g. an ID of "001"). */
           aggregate({ args, query }) {
             return query({ ...args, where: scopedWhere });
@@ -116,7 +116,7 @@ export class WorkItemGroupsController {
         },
       },
     });
-    const result = await createScopedQuery(scoped.workItem, 'WorkItem').aggregate({ ...input, where: scopedWhere });
-    return workItemAggregateSchema.parse(result);
+    const result = await createScopedQuery(scoped.task, 'Task').aggregate({ ...input, where: scopedWhere });
+    return taskAggregateSchema.parse(result);
   }
 }
