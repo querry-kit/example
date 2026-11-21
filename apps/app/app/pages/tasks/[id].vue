@@ -129,7 +129,7 @@ let request = 0;
 const api = useWorkboardResources('tasks');
 const tasksLink = computed(
   /** Keeps the project context when returning from a task. */
-  () => ({ path: '/tasks', query: { project: route.query.project } }),
+  () => ({ path: '/tasks', query: { project: route.query.project, projectOp: route.query.projectOp } }),
 );
 
 /** Updates the detail from the validated write response. */

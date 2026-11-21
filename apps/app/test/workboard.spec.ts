@@ -162,6 +162,7 @@ test(
     const project = await addProjectFilter(filters);
     await project.click();
     await page.getByRole('option', { name: 'Design', exact: true }).click();
+    await page.keyboard.press('Escape');
     await page.getByRole('button', { name: 'Filter', exact: true }).click();
     await expect(page.getByText('Showing 1–2 of 3')).toBeVisible();
     const groupBy = page.getByRole('button', { name: 'Group by', exact: true });
@@ -219,6 +220,7 @@ test(
     const project = await addProjectFilter(filters);
     await project.click();
     await page.getByRole('option', { name: 'Design', exact: true }).click();
+    await page.keyboard.press('Escape');
     await page.getByRole('button', { name: 'Filter', exact: true }).click();
     await expect(page).toHaveURL(/\?project=design$/);
     await expect(page.getByText('Showing 1–2 of 3')).toBeVisible();
@@ -270,29 +272,43 @@ test(
 );
 
 test(
-  'keeps the project filter in the Tasks popover and clears its URL with other filters',
-  /** Exercises a bookmarked project and the popover’s clear action on a narrow screen. */
+  'combines multiple projects with the standard filter operators and keeps their URL',
+  /** Exercises a bookmarked project, inclusion/exclusion, and combined filtering on a narrow screen. */
   async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 850 });
     await page.goto('/tasks?project=design&view=demo');
     await expect(page.getByText('Showing 1–2 of 3')).toBeVisible();
-    const projectButtons = page.getByRole('button', { name: 'Project', exact: true });
-    await expect(projectButtons).toHaveCount(1);
-    await expect(page.getByRole('columnheader', { name: 'Project', exact: true }).getByRole('button')).toBeVisible();
     const filters = await openTaskFilters(page);
-    await expect(filters.getByRole('button', { name: 'Project', exact: true })).toContainText('Design');
-    await filters.getByRole('button', { name: 'Project', exact: true }).click();
-    await page.getByRole('option', { name: 'Workboard', exact: true }).click();
-    await expect(page).toHaveURL(/\/tasks\?project=shared&view=demo$/);
-    await expect(page.getByText('Showing 1–2 of 8')).toBeVisible();
-
-    await filters.getByRole('button', { name: 'Remove project filter', exact: true }).click();
-    await expect(page).toHaveURL(/\/tasks\?view=demo$/);
-    await expect(filters.getByRole('button', { name: 'Project', exact: true })).toHaveCount(0);
-    const project = await addProjectFilter(filters);
+    const project = filters.getByRole('button', { name: 'Project', exact: true });
+    await expect(project).toContainText('Design');
     await project.click();
-    await page.getByRole('option', { name: 'Design', exact: true }).click();
-    await expect(page.getByText('Showing 1–2 of 3')).toBeVisible();
+    await page.getByRole('option', { name: 'Workboard', exact: true }).click();
+    await page.keyboard.press('Escape');
+    await expect(project).toContainText('Design');
+    await expect(project).toContainText('Workboard');
+    await expect(page).toHaveURL(/project=design&project=shared/);
+    await expect(page.getByText('Showing 1–2 of 11')).toBeVisible();
+
+    await filters.getByRole('combobox', { name: 'Project', exact: true }).click();
+    await page.getByRole('option', { name: '∉', exact: true }).click();
+    await expect(page).toHaveURL(/projectOp=notIn/);
+    await expect(page.getByText('Showing 1–2 of 7')).toBeVisible();
+
+    await filters.getByRole('combobox', { name: 'Select field' }).click();
+    await page.getByRole('option', { name: 'Status', exact: true }).click();
+    await filters.getByRole('button', { name: 'Add filter', exact: true }).click();
+    await filters.getByRole('button', { name: 'Status', exact: true }).click();
+    await page.getByRole('option', { name: 'OPEN', exact: true }).click();
+    await page.keyboard.press('Escape');
+    await expect(page.getByText('Showing 1–1 of 1')).toBeVisible();
+    await filters.getByRole('button', { name: 'Toggle filter mode', exact: true }).click();
+    await expect(page.getByText('Showing 1–2 of 11')).toBeVisible();
+
+    await page.reload();
+    await openTaskFilters(page);
+    await expect(project).toContainText('Design');
+    await expect(project).toContainText('Workboard');
+    await expect(page.getByText('Showing 1–2 of 11')).toBeVisible();
 
     await filters.getByRole('button', { name: 'Clear filters', exact: true }).click();
     await expect(page).toHaveURL(/\/tasks\?view=demo$/);

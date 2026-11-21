@@ -30,20 +30,6 @@
         :column-definitions="columnOptions"
         :ui="{ primary: 'min-w-0', secondary: 'min-w-0' }"
       >
-        <template #filter-item="{ filter, remove }">
-          <template v-if="filter.field === 'project'">
-            <TasksProjectLookup v-model="project" class="min-w-0 flex-1" />
-            <UButton
-              class="self-end"
-              color="error"
-              variant="outline"
-              size="sm"
-              icon="i-tabler-x"
-              aria-label="Remove project filter"
-              @click="remove"
-            />
-          </template>
-        </template>
         <template #new>
           <WorkboardDeleteDialog
             v-if="selectedCount || deleteOpen"
@@ -60,7 +46,7 @@
               :label="`Delete selected (${selectedCount})`"
             />
           </WorkboardDeleteDialog>
-          <TasksTaskEditor :project-id="project" @saved="openCreatedTask">
+          <TasksTaskEditor :project-id="editorProjectId" @saved="openCreatedTask">
             <UButton icon="i-tabler-plus" label="New task" />
           </TasksTaskEditor>
         </template>
@@ -113,7 +99,7 @@
         <ULink
           v-if="field === 'title' && item.id"
           class="font-medium text-highlighted hover:text-primary"
-          :to="{ path: `/tasks/${item.id}`, query: { project } }"
+          :to="{ path: `/tasks/${item.id}`, query: projectQuery }"
           :aria-label="`Open ${item.title ?? item.id}`"
         >
           {{ item.title }}
@@ -154,7 +140,7 @@
             {
               label: 'Open',
               icon: 'i-tabler-external-link',
-              to: { path: `/tasks/${item.id}`, query: { project } },
+              to: { path: `/tasks/${item.id}`, query: projectQuery },
             },
           ]"
         >
@@ -181,19 +167,20 @@
 </template>
 
 <script setup lang="ts">
-import { andWhere, filteringToWhere, useGroupedTable } from '@querry-kit/nuxt';
-import type {
-  ColumnDefinition,
-  FilterField,
-  Filtering,
-  GroupedTableColumn,
-  GroupingField,
-  SortingField,
+import { andWhere, filteringToWhere, isEqual, useGroupedTable } from '@querry-kit/nuxt';
+import {
+  FilteringFieldOperator,
+  type ColumnDefinition,
+  type FilterField,
+  type Filtering,
+  type GroupedTableColumn,
+  type GroupingField,
+  type SortingField,
 } from '@querry-kit/nuxt-ui/types';
 import { createReusableTemplate, refDebounced } from '@vueuse/core';
-import { resourceIdSchema, type DemoSession, type Task } from '@workboard/contracts';
+import { projectFilterLimit, resourceIdSchema, type DemoSession, type Task } from '@workboard/contracts';
 
-import ProjectLookup from '~/components/tasks/ProjectLookup.vue';
+import ProjectFilter from '~/components/tasks/ProjectFilter.vue';
 
 import { taskTableUi, type GroupItemColumn } from '~/utils/group-table';
 import { taskFilterFields, taskStaticWhere } from '~/utils/task-controls';
@@ -208,40 +195,12 @@ const { selectedCount, isSelected, groupState, selectTasks, selectGroup, deleteP
   useTaskSelection();
 const deleteOpen = ref(false);
 const debouncedSearch = refDebounced(search, 250);
-const project = computed<string | undefined>({
-  /** Reads the project from the current URL, including links from the project list. */
-  get: () => {
-    const parsed = resourceIdSchema.safeParse(route.query.project);
-    return parsed.success ? parsed.data : undefined;
-  },
-  /** Replaces the filter while preserving the rest of the query. */
-  set: (value: string | undefined) => {
-    if (value !== project.value) void router.replace({ query: { ...route.query, project: value } });
-  },
-});
-const projectFilterAdded = ref(false);
-const projectFilterVisible = computed(
-  /** Includes project links and locally added empty rows. */ () => projectFilterAdded.value || Boolean(project.value),
-);
-const filterFields = computed<FilterField[]>(
-  /** Offers a single project filter alongside the standard filter fields. */
-  () => [
-    {
-      value: 'project',
-      label: 'Project',
-      type: 'select',
-      component: ProjectLookup,
-      disabled: projectFilterVisible.value,
-    },
-    ...taskFilterFields,
-  ],
-);
 const [DefineLoadingModeSwitch, LoadingModeSwitch] = createReusableTemplate();
 const groupedView = useTemplateRef<{ focus: () => void }>('groupedView');
 
 const staticFilter = computed(
-  /** Validates the search and relation filters using the same contract as the API. */
-  () => taskStaticWhere(debouncedSearch.value, project.value),
+  /** Applies the title search independently of the structured filters. */
+  () => taskStaticWhere(debouncedSearch.value),
 );
 
 /** Renders the title from the projected relation rather than passing the object to the renderer. */
@@ -329,29 +288,99 @@ const table = useGroupedTable<Task, TaskColumn>({
   loading: { initialMode: 'pagination', preloadGroupItems: false },
 });
 const { columns, grouping, loadingMode, sorting, filtering, columnOrder, columnVisibility, columnPinning } = table;
-const projectFilter: Filtering['filters'][number] = { id: 'project', field: 'project', type: 'select', value: [] };
-const toolbarFiltering = computed<Filtering>({
-  /** Displays the URL-backed project filter alongside stored table filters. */
-  get: () => {
-    const { operator, filters } = filtering.value as Filtering;
-    return { operator, filters: projectFilterVisible.value ? [projectFilter, ...filters] : filters };
-  },
-  /** Removes the project query when its row is deleted, without changing how the remaining filters combine. */
-  set: (value) => {
-    projectFilterAdded.value = value.filters.some(
-      /** Identifies the dedicated project row. */ (filter) => filter.field === 'project',
-    );
-    if (!projectFilterAdded.value) project.value = undefined;
-    filtering.value = {
-      operator: value.operator,
-      filters: value.filters.filter(
-        /** Keeps project scoping in the URL-backed filter. */ (filter) => filter.field !== 'project',
-      ),
+const projectField = 'project.id';
+const projectFilter = computed(
+  /** Looks up the project rule in the same state used for all structured filters. */
+  () =>
+    (filtering.value as Filtering).filters.find(
+      /** Finds the project ID rule. */ (rule) => rule.field === projectField,
+    ),
+);
+const filterFields = computed<FilterField[]>(
+  /** Allows one project rule with multiple project IDs. */
+  () => [
+    {
+      value: projectField,
+      label: 'Project',
+      type: 'select',
+      component: ProjectFilter,
+      disabled: Boolean(projectFilter.value),
+    },
+    ...taskFilterFields,
+  ],
+);
+
+/** Normalizes project IDs from URL parameters or a filter row. */
+function projectIds(value: unknown): string[] {
+  const items = Array.isArray(value) ? value : [value];
+  const ids = new Set<string>();
+  for (const item of items) {
+    const parsed = resourceIdSchema.safeParse(item);
+    if (parsed.success) ids.add(parsed.data);
+    if (ids.size === projectFilterLimit) break;
+  }
+  return [...ids];
+}
+
+const projectQuery = computed(
+  /** Serializes the inclusion operator implicitly for compatibility with existing project links. */
+  () => {
+    const ids = projectIds(projectFilter.value?.value);
+    return {
+      project: ids.length ? ids : undefined,
+      projectOp: ids.length && projectFilter.value?.operator === FilteringFieldOperator.NotIn ? 'notIn' : undefined,
     };
   },
+);
+const editorProjectId = computed(
+  /** Prefills new tasks only when the filter includes exactly one project. */
+  () =>
+    projectQuery.value.project?.length === 1 && !projectQuery.value.projectOp
+      ? projectQuery.value.project[0]
+      : undefined,
+);
+
+const toolbarFiltering = computed<Filtering>({
+  /** Displays the canonical structured filters. */
+  get: () => filtering.value as Filtering,
+  /** Mirrors project changes in the URL while keeping the other query parameters. */
+  set: (value) => {
+    const before = projectQuery.value;
+    filtering.value = value;
+    if (!isEqual(before, projectQuery.value)) {
+      void router.replace({ query: { ...route.query, ...projectQuery.value } });
+    }
+  },
 });
+
+watch(
+  /** Watches both bookmarked projects and the optional exclusion operator. */
+  () => [route.query.project, route.query.projectOp] as const,
+  /** Applies bookmarked projects through the standard filter model. */
+  ([rawIds, rawOperator]) => {
+    const ids = projectIds(rawIds);
+    const operator = rawOperator === 'notIn' ? FilteringFieldOperator.NotIn : FilteringFieldOperator.In;
+    const current = projectFilter.value;
+    if (isEqual(ids, projectIds(current?.value)) && (!ids.length || current?.operator === operator)) return;
+
+    const state = filtering.value as Filtering;
+    const otherFilters = state.filters.filter(
+      /** Leaves the other structured filters in place. */ (rule) => rule.field !== projectField,
+    );
+    filtering.value = {
+      ...state,
+      filters: ids.length
+        ? [
+            { id: current?.id ?? projectField, field: projectField, type: 'select', operator, value: ids },
+            ...otherFilters,
+          ]
+        : otherFilters,
+    };
+  },
+  { immediate: true, deep: true },
+);
 const groupFilter = computed(
-  /** Shares the group query's search, project filter, and structured filters with effort metrics. */
+  /** Shares the table's title search and structured filters with group metrics. */
   () => andWhere(staticFilter.value, filteringToWhere(filtering.value)),
 );
 const selectionScope = computed(
@@ -382,7 +411,7 @@ function taskValue(task: Task, id: string): string | number | boolean | undefine
 
 /** Opens the created task even if it falls outside the current filters or page. */
 function openCreatedTask(task: Task): void {
-  if (task.id) void router.push({ path: `/tasks/${task.id}`, query: { project: project.value } });
+  if (task.id) void router.push({ path: `/tasks/${task.id}`, query: projectQuery.value });
 }
 
 /** Submits the confirmed selection as one atomic request. */

@@ -43,6 +43,18 @@ const priorityFilter = z.union([
   }),
 ]);
 
+/** Maximum number of project IDs accepted in a task filter. */
+export const projectFilterLimit = 100;
+const projectIds = z.array(resourceIdSchema).max(projectFilterLimit);
+const projectIdFilter = z.union([
+  resourceIdSchema,
+  z.strictObject({
+    equals: resourceIdSchema.optional(),
+    in: projectIds.optional(),
+    notIn: projectIds.optional(),
+  }),
+]);
+
 const simpleWhere = z.strictObject({
   id: idFilterSchema.optional(),
   title: textFilterSchema.optional(),
@@ -51,7 +63,7 @@ const simpleWhere = z.strictObject({
   estimatedHours: numericFilter.optional(),
   internalNote: textFilterSchema.optional(),
   internalCostCents: numericFilter.optional(),
-  project: z.strictObject({ id: idFilterSchema.optional(), title: textFilterSchema.optional() }).optional(),
+  project: z.strictObject({ id: projectIdFilter.optional(), title: textFilterSchema.optional() }).optional(),
   labels: z.strictObject({ some: z.strictObject({ labelId: idFilterSchema }) }).optional(),
 });
 

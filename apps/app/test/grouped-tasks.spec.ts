@@ -240,6 +240,7 @@ test(
     const project = await addProjectFilter(filters);
     await project.click();
     await page.getByRole('option', { name: 'Design', exact: true }).click();
+    await page.keyboard.press('Escape');
     await page.getByRole('button', { name: 'Filter', exact: true }).click();
     const filtered = page.getByRole('button', { name: 'OPEN 1 items', exact: true });
     await expect(table.getByRole('row').filter({ has: filtered }).getByLabel('Total estimated hours')).toHaveText('6');

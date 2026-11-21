@@ -1,6 +1,5 @@
-import { andWhere } from '@querry-kit/nuxt';
 import type { FilterField } from '@querry-kit/nuxt-ui/types';
-import { taskPrioritySchema, taskStatusSchema, taskWhereSchema } from '@workboard/contracts';
+import { taskPrioritySchema, taskStatusSchema } from '@workboard/contracts';
 
 export const taskFilterFields: FilterField[] = [
   {
@@ -18,12 +17,8 @@ export const taskFilterFields: FilterField[] = [
   { value: 'estimatedHours', label: 'Est. hours', type: 'number' },
 ];
 
-/** Applies the same validated search and optional project relation filter in both views. */
-export function taskStaticWhere(search: string | undefined, project?: string) {
+/** Builds the title search shared by the task table and group metrics. */
+export function taskStaticWhere(search: string | undefined) {
   const title = search?.trim().slice(0, 160);
-  const where = andWhere(
-    title ? { title: { contains: title, mode: 'insensitive' } } : undefined,
-    project ? { project: { id: project } } : undefined,
-  );
-  return where ? taskWhereSchema.parse(where) : undefined;
+  return title ? { title: { contains: title, mode: 'insensitive' } } : undefined;
 }
