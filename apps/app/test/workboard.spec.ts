@@ -8,7 +8,7 @@ async function openWorkboard(page: Page): Promise<void> {
   await page.goto('/');
   await selectAccount(page, 'user1');
   await expect(page.getByRole('table')).toBeVisible();
-  await expect(page.getByText('Showing 1–2 of 6')).toBeVisible();
+  await expect(page.getByText('Showing 1–6 of 6')).toBeVisible();
 }
 
 test(
@@ -108,7 +108,7 @@ test(
     await design.click();
     await expect(page).toHaveURL(/\/tasks\?project=design$/);
     await expect(page.getByRole('heading', { name: 'Tasks', exact: true })).toBeVisible();
-    await expect(page.getByText('Showing 1–2 of 3')).toBeVisible();
+    await expect(page.getByText('Showing 1–3 of 3')).toBeVisible();
     await page.goto('/?project=design');
     await expect(page).toHaveURL(/\/tasks\?project=design$/);
     const filters = await openTaskFilters(page);
@@ -121,6 +121,8 @@ test(
   /** Exercises both modes and a failed append against the seeded API. */
   async ({ page }) => {
     await openWorkboard(page);
+    await page.locator('footer').getByRole('combobox').click();
+    await page.getByRole('option', { name: '2', exact: true }).click();
     const documentation = page.getByRole('navigation', { name: 'Documentation' });
     await expect(documentation.getByRole('link', { name: 'API reference' })).toHaveAttribute('href', '/docs');
     await expect(documentation.getByRole('link', { name: 'Querry Kit docs' })).toBeVisible();
@@ -136,13 +138,15 @@ test(
         }
       },
     );
-    const mode = page.getByRole('switch', { name: 'Infinite scroll', exact: true });
-    await expect(mode).toHaveText('');
-    await expect(mode).not.toBeChecked();
-    await mode.hover();
+    const modes = page.getByRole('group', { name: 'Row loading mode' });
+    const pagination = modes.getByRole('button', { name: 'Pagination', exact: true });
+    const infinite = modes.getByRole('button', { name: 'Infinite scroll', exact: true });
+    await expect(pagination).toHaveAttribute('aria-pressed', 'true');
+    await pagination.hover();
     await expect(page.getByRole('tooltip')).toHaveText('Pagination');
-    await mode.press('Space');
-    await expect(mode).toBeChecked();
+    await infinite.press('Space');
+    await expect(infinite).toHaveAttribute('aria-pressed', 'true');
+    await expect(pagination).toHaveAttribute('aria-pressed', 'false');
     await expect(page.getByRole('button', { name: 'Next page' })).toHaveCount(0);
     const retry = page.getByRole('button', { name: 'Retry', exact: true });
     await expect(retry).toBeVisible();
@@ -151,12 +155,13 @@ test(
     await retry.click();
     await expect(page.getByText('Showing 1–6 of 6')).toBeVisible();
     await expect(page.getByRole('table').locator('tbody tr')).toHaveCount(6);
-    await mode.hover();
+    await infinite.hover();
     await expect(page.getByRole('tooltip')).toHaveText('Infinite scroll');
 
-    await mode.press('Space');
-    await expect(mode).toBeFocused();
-    await expect(mode).not.toBeChecked();
+    await pagination.press('Space');
+    await expect(pagination).toBeFocused();
+    await expect(pagination).toHaveAttribute('aria-pressed', 'true');
+    await expect(infinite).toHaveAttribute('aria-pressed', 'false');
     await expect(page.getByText('Showing 1–2 of 6')).toBeVisible();
     const filters = await openTaskFilters(page);
     const project = await addProjectFilter(filters);
@@ -190,6 +195,8 @@ test(
   /** Uses the real Nuxt UI controls and the seeded database. */
   async ({ page }) => {
     await openWorkboard(page);
+    await page.locator('footer').getByRole('combobox').click();
+    await page.getByRole('option', { name: '2', exact: true }).click();
     await expect(page.getByRole('columnheader', { name: 'Internal note', exact: true })).toHaveCount(0);
     await expect(page.getByText('Review navigation labels', { exact: true })).toBeVisible();
     await page.getByRole('button', { name: 'Next page' }).click();
@@ -267,7 +274,7 @@ test(
     await page.goto('/');
     await expect(page.getByText('Could not load tasks')).toBeVisible();
     await page.getByRole('button', { name: 'Retry', exact: true }).click();
-    await expect(page.getByText('Showing 1–2 of 18')).toBeVisible();
+    await expect(page.getByText('Showing 1–10 of 18')).toBeVisible();
   },
 );
 
@@ -277,7 +284,9 @@ test(
   async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 850 });
     await page.goto('/tasks?project=design&view=demo');
-    await expect(page.getByText('Showing 1–2 of 3')).toBeVisible();
+    // The footer hides its range when space is limited; the filter still updates the result count.
+    const range = page.locator('footer p[aria-live="polite"]');
+    await expect(range).toHaveText('Showing 1–3 of 3');
     const filters = await openTaskFilters(page);
     const project = filters.getByRole('button', { name: 'Project', exact: true });
     await expect(project).toContainText('Design');
@@ -291,12 +300,12 @@ test(
     await expect(project).toContainText('Design');
     await expect(project).toContainText('Workboard');
     await expect(page).toHaveURL(/project=design&project=shared/);
-    await expect(page.getByText('Showing 1–2 of 11')).toBeVisible();
+    await expect(range).toHaveText('Showing 1–10 of 11');
 
     await filters.getByRole('combobox', { name: 'Operator for Project', exact: true }).click();
     await page.getByRole('option', { name: '∉', exact: true }).click();
     await expect(page).toHaveURL(/projectOp=notIn/);
-    await expect(page.getByText('Showing 1–2 of 7')).toBeVisible();
+    await expect(range).toHaveText('Showing 1–7 of 7');
 
     await filters.getByRole('combobox', { name: 'Select field' }).click();
     await page.getByRole('option', { name: 'Status', exact: true }).click();
@@ -304,20 +313,20 @@ test(
     await filters.getByRole('button', { name: 'Status', exact: true }).click();
     await page.getByRole('option', { name: 'OPEN', exact: true }).click();
     await page.keyboard.press('Escape');
-    await expect(page.getByText('Showing 1–1 of 1')).toBeVisible();
+    await expect(range).toHaveText('Showing 1–1 of 1');
     await filters.getByRole('button', { name: 'Toggle filter mode', exact: true }).click();
-    await expect(page.getByText('Showing 1–2 of 11')).toBeVisible();
+    await expect(range).toHaveText('Showing 1–10 of 11');
 
     await page.reload();
     await openTaskFilters(page);
     await expect(project).toContainText('Design');
     await expect(project).toContainText('Workboard');
-    await expect(page.getByText('Showing 1–2 of 11')).toBeVisible();
+    await expect(range).toHaveText('Showing 1–10 of 11');
 
     await filters.getByRole('button', { name: 'Clear filters', exact: true }).click();
     await expect(page).toHaveURL(/\/tasks\?view=demo$/);
     await expect(project).toHaveCount(0);
     await expect(filters.getByRole('button', { name: 'Clear filters', exact: true })).toHaveCount(0);
-    await expect(page.getByText('Showing 1–2 of 18')).toBeVisible();
+    await expect(range).toHaveText('Showing 1–10 of 18');
   },
 );

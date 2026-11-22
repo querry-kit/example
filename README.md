@@ -81,7 +81,7 @@ curl --fail --cookie workboard.cookies --get \
 
 `GET /api/tasks/aggregate` accepts the same `where` filter and metric selectors without `by`. Both endpoints apply the active account's CASL scope before the database computes results.
 
-On **Tasks**, use **Group by** to add one or more grouping fields, then expand a group. Use **Show effort metrics** in the footer for totals and averages. Toggle **Infinite scroll** to switch between pages and incremental loading. Counts and metrics cover every matching authorized task.
+On **Tasks**, use **Group by** to add one or more grouping fields, then expand a group. Select **Pagination** or **Infinite scroll** in the footer button group. Group counts and estimated-hour sums cover every matching authorized task.
 
 ### Open the dashboard
 
@@ -91,7 +91,7 @@ With the local API running, start the Nuxt app:
 pnpm --filter @workboard/app dev
 ```
 
-Open `http://127.0.0.1:3201`, switch to `user1` in the navbar, and explore the two-row pages. Open **Projects** to search by title or slug, filter and sort by task count, or open a project’s task list. Counts include all tasks visible to the active account, regardless of task status. The **Tasks** toolbar provides search, structured filters, multi-sort, and column options. The project picker in **Filter** searches scoped server results and restores the selected project when you reload its URL. Open a row to see its projected details.
+Open `http://127.0.0.1:3201` and switch to `user1` in the navbar. **Tasks** and **Projects** show 10 rows per page by default. Open **Projects** to search by title or slug, filter and sort by task count, or open a project’s task list. Counts include all tasks visible to the active account, regardless of task status. The **Tasks** toolbar provides search, structured filters, multi-sort, and column options. The project picker in **Filter** searches scoped server results and restores the selected project when you reload its URL. Open a row to see its projected details.
 
 ### Editing projects and tasks
 
@@ -124,7 +124,7 @@ The pinned standalone build and its lockfile remain the baseline. If a local bra
 2. [`query-parser.ts`](apps/api/src/query/query-parser.ts) normalizes the Fastify query without turning opaque string values into numbers. [`query-docs.ts`](apps/api/src/query/query-docs.ts) builds OpenAPI from the same input and output schemas.
 3. [`tasks.service.ts`](apps/api/src/tasks/tasks.service.ts) calls Query Kit's resource helper with a CASL-scoped service. [`task-projection.ts`](apps/api/src/tasks/task-projection.ts) maps the Prisma joins and removes unreadable fields.
 4. [`querry-kit.ts`](apps/app/app/plugins/querry-kit.ts) configures the Nuxt client, validates incoming data and cancels account-bound reads when the user switches.
-5. [`TaskTable.vue`](apps/app/app/components/tasks/TaskTable.vue) binds `useGroupedTable` to the Nuxt UI controls and loads groups on demand. [`ProjectLookup.vue`](apps/app/app/components/tasks/ProjectLookup.vue) handles scoped autocomplete. [`useGroupMetrics.ts`](apps/app/app/composables/useGroupMetrics.ts) fetches optional aggregates.
+5. [`TaskTable.vue`](apps/app/app/components/tasks/TaskTable.vue) binds `useGroupedTable` to the Nuxt UI controls and loads groups on demand. [`ProjectLookup.vue`](apps/app/app/components/tasks/ProjectLookup.vue) handles scoped autocomplete.
 
 Key integration blocks link directly to their Querry Kit docs. To use this repo as a starter or introduce Querry Kit into an existing app, see [Adopt Querry Kit](docs/adopt-querry-kit.md).
 

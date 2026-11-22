@@ -1,18 +1,5 @@
 <template>
   <WorkboardPanel title="Tasks" full-page>
-    <DefineLoadingModeSwitch>
-      <UTooltip :text="loadingMode === 'infinite' ? 'Infinite scroll' : 'Pagination'">
-        <USwitch
-          v-model="loadingMode"
-          true-value="infinite"
-          false-value="pagination"
-          checked-icon="i-tabler-infinity"
-          unchecked-icon="i-tabler-list-numbers"
-          aria-label="Infinite scroll"
-        />
-      </UTooltip>
-    </DefineLoadingModeSwitch>
-
     <template #toolbar>
       <!-- Controls only manage intent. The headless table translates it into server requests. -->
       <QTableToolbar
@@ -24,30 +11,34 @@
         v-model:invisible-columns="columnVisibility"
         v-model:column-pinning="columnPinning"
         search-placeholder="Search tasks"
+        :selected-count="selectedCount"
         :filter-fields="filterFields"
         :sortable-fields="sortableFields"
         :groupable-fields="groupableFields"
         :column-definitions="columnOptions"
-        :ui="{ primary: 'min-w-0', secondary: 'min-w-0' }"
       >
-        <template #new>
+        <template #layout="{ search: searchControl, options, actions }">
+          <WorkboardToolbarLayout
+            :breadcrumbs="[{ label: 'Tasks' }]"
+            :actions="actions"
+            :search="searchControl"
+            :options="options"
+          />
+        </template>
+        <template #bulk-actions>
           <WorkboardDeleteDialog
-            v-if="selectedCount || deleteOpen"
             v-model:open="deleteOpen"
             title="Delete selected tasks"
             :description="`Permanently delete ${selectedCount} selected ${selectedCount === 1 ? 'task' : 'tasks'}?`"
             :remove="deleteSelected"
             @deleted="refreshAfterDelete"
           >
-            <UButton
-              color="error"
-              variant="outline"
-              icon="i-tabler-trash"
-              :label="`Delete selected (${selectedCount})`"
-            />
+            <UButton color="error" variant="outline" icon="i-tabler-trash" label="Delete selected" />
           </WorkboardDeleteDialog>
+        </template>
+        <template #new>
           <TasksTaskEditor :project-id="editorProjectId" @saved="openCreatedTask">
-            <UButton icon="i-tabler-plus" label="New task" />
+            <WorkboardNewButton label="New task" />
           </TasksTaskEditor>
         </template>
       </QTableToolbar>
@@ -61,7 +52,6 @@
       :columns="columns"
       :available-columns="availableColumns"
       :get-id="(item) => item.id ?? ''"
-      :show-branch="showMetrics"
       :ui="taskTableUi"
       :texts="{ grouping: { empty: 'No matching tasks', itemsError: 'Could not load tasks' } }"
     >
@@ -77,6 +67,7 @@
         <UCheckbox
           v-if="node"
           :aria-label="`Select group ${node.value ?? 'No value'} ${node.count} items`"
+          :ui="{ base: 'data-[state=unchecked]:ring-current' }"
           :model-value="groupState(node)"
           @update:model-value="selectGroup(node, $event === true)"
         />
@@ -153,14 +144,20 @@
         </UDropdownMenu>
         <TasksTaskValue v-else :field="field" :value="taskValue(item, field)" />
       </template>
-      <template v-if="showMetrics" #branch="{ node }">
-        <TasksGroupMetrics :path="node.path" :filter="groupFilter" />
-      </template>
       <template #footer-start>
-        <LoadingModeSwitch />
-      </template>
-      <template #footer-end>
-        <USwitch v-model="showMetrics" class="ms-auto" label="Show effort metrics" />
+        <UFieldGroup role="group" aria-label="Row loading mode" size="sm">
+          <UTooltip v-for="mode in loadingModes" :key="mode.value" :text="mode.label">
+            <UButton
+              class="cursor-pointer"
+              :color="loadingMode === mode.value ? 'primary' : 'neutral'"
+              :variant="loadingMode === mode.value ? 'solid' : 'outline'"
+              :icon="mode.icon"
+              :aria-label="mode.label"
+              :aria-pressed="loadingMode === mode.value"
+              @click="loadingMode = mode.value"
+            />
+          </UTooltip>
+        </UFieldGroup>
       </template>
     </QTableGrouped>
   </WorkboardPanel>
@@ -178,7 +175,7 @@ import {
   type GroupingField,
   type SortingField,
 } from '@querry-kit/nuxt-ui/types';
-import { createReusableTemplate, refDebounced } from '@vueuse/core';
+import { refDebounced } from '@vueuse/core';
 import {
   projectFilterLimit,
   resourceIdSchema,
@@ -198,12 +195,14 @@ const { $workboardApi } = useNuxtApp();
 const route = useRoute();
 const router = useRouter();
 const search = ref('');
-const showMetrics = ref(false);
 const { selectedCount, isSelected, groupState, selectTasks, selectGroup, deletePayload, clearSelection } =
   useTaskSelection();
 const deleteOpen = ref(false);
 const debouncedSearch = refDebounced(search, 250);
-const [DefineLoadingModeSwitch, LoadingModeSwitch] = createReusableTemplate();
+const loadingModes = [
+  { value: 'pagination', label: 'Pagination', icon: 'i-tabler-list-numbers' },
+  { value: 'infinite', label: 'Infinite scroll', icon: 'i-tabler-infinity' },
+] as const;
 const groupedView = useTemplateRef<{ focus: () => void }>('groupedView');
 
 const staticFilter = computed(
@@ -224,7 +223,7 @@ function ownerName(item: Task): string {
 type TaskColumn = GroupItemColumn & GroupedTableColumn;
 const allColumns: TaskColumn[] = [
   { id: 'title', width: 220, accessorKey: 'title', header: 'Title', enableHiding: false },
-  { id: 'status', width: 168, accessorKey: 'status', header: 'Status' },
+  { id: 'status', width: 192, accessorKey: 'status', header: 'Status' },
   { id: 'priority', width: 132, accessorKey: 'priority', header: 'Priority' },
   { id: 'project', width: 150, accessorFn: projectTitle, header: 'Project', fields: ['title'] },
   { id: 'owner', width: 150, accessorFn: ownerName, header: 'Owner', fields: ['profile.displayName'] },
@@ -292,7 +291,7 @@ const table = useGroupedTable<Task, TaskColumn>({
   persistExpansion: true,
   persistenceKey: `tasks:${props.session.id}`,
   staticFilter,
-  defaultItemsPerPage: 2,
+  defaultItemsPerPage: 10,
   loading: { initialMode: 'pagination', preloadGroupItems: false },
 });
 const { columns, grouping, loadingMode, sorting, filtering, columnOrder, columnVisibility, columnPinning } = table;

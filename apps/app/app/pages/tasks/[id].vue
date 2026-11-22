@@ -1,7 +1,10 @@
 <template>
-  <WorkboardPanel title="Task details" :heading="false">
+  <WorkboardPanel
+    title="Task details"
+    :heading="false"
+    :breadcrumbs="[{ label: 'Tasks', to: tasksLink }, { label: task?.title ?? 'Task details' }]"
+  >
     <section class="mx-auto w-full max-w-4xl space-y-4" aria-labelledby="task-heading">
-      <UButton icon="i-tabler-arrow-left" color="neutral" variant="ghost" label="Tasks" :to="tasksLink" />
       <p v-if="loading" role="status" class="text-muted">
         Loading task…
       </p>

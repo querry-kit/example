@@ -2,6 +2,67 @@ import { expect, test } from '@playwright/test';
 
 import { selectAccount } from '../../apps/app/test/demo-account';
 
+for (const width of [375, 1280]) {
+  test(
+    `default toolbar shortcuts activate the intended task controls at ${width}px`,
+    /** Exercises all six shortcuts with the real toolbar and competing bulk action. */ async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto('/tasks');
+      await expect(page.getByRole('button', { name: 'New task', exact: true })).toHaveCSS('cursor', 'pointer');
+      const shortcuts = [
+        ['G', 'Group by'],
+        ['F', 'Filter'],
+        ['S', 'Sort'],
+        ['O', 'Table options'],
+      ] as const;
+      for (const [key, title] of [...shortcuts, ['N', 'New task']]) {
+        const trigger = page.getByRole('button', { name: title, exact: true });
+        await expect(trigger).toHaveCSS('cursor', 'pointer');
+        await trigger.hover();
+        await expect(page.getByRole('tooltip', { name: `${title} Shift ${key}`, exact: true })).toBeVisible();
+        await page.getByRole('heading', { name: 'Tasks', exact: true }).hover();
+      }
+      for (const [key, title] of shortcuts) {
+        await page.keyboard.press(`Shift+${key}`);
+        const panel = page.getByRole('dialog', { name: title, exact: true });
+        await expect(panel).toBeVisible();
+        await page.keyboard.press('Escape');
+        await expect(panel).toBeHidden();
+      }
+      const search = page.getByRole('textbox', { name: 'Search tasks' });
+      if (width < 640) {
+        const trigger = page.getByRole('button', { name: 'Search tasks', exact: true });
+        await expect(search).toBeHidden();
+        await trigger.hover();
+        await expect(page.getByRole('tooltip', { name: 'Search tasks Shift /', exact: true })).toBeVisible();
+        await trigger.click();
+        await expect(search).toBeFocused();
+        await search.fill('Audit');
+        await search.press('Escape');
+        await expect(trigger).toBeFocused();
+        await expect(search).toBeHidden();
+      } else {
+        await expect(search).toBeVisible();
+        await expect(page.locator('.qk-table-toolbar-search kbd')).toHaveText(['Shift', '/']);
+      }
+      await page.keyboard.press('Shift+Slash');
+      await expect(search).toBeFocused();
+      if (width < 640) {
+        await expect(search).toHaveValue('Audit');
+        await search.fill('');
+      }
+      await page.keyboard.press('Shift+N');
+      await expect(search).toHaveValue('N');
+      await search.fill('');
+      await search.blur();
+      await page.getByRole('checkbox', { name: 'Select visible tasks' }).click();
+      await expect(page.getByRole('button', { name: /Delete selected/ })).toBeVisible();
+      await page.keyboard.press('Shift+N');
+      await expect(page.getByRole('dialog', { name: 'New task', exact: true })).toBeVisible();
+    },
+  );
+}
+
 for (const width of [375, 768, 1280]) {
   test(
     `the dashboard stays usable at ${width}px in both color modes`,
@@ -14,9 +75,9 @@ for (const width of [375, 768, 1280]) {
       await expect(page.getByRole('heading', { name: 'Tasks', exact: true })).toBeVisible();
       await expect(page.getByRole('button', { name: 'Filter', exact: true })).toBeVisible();
       await expect(page.getByRole('button', { name: 'Group by', exact: true })).toBeInViewport();
-      await expect(page.getByRole('switch', { name: 'Infinite scroll', exact: true })).toBeInViewport();
+      await expect(page.getByRole('group', { name: 'Row loading mode' })).toBeInViewport();
       await expect(page.getByRole('combobox', { name: 'Switch demo account' })).toBeVisible();
-      await expect(page.getByText('Showing 1–2 of 6')).toBeVisible();
+      await expect(page.getByText('Showing 1–6 of 6')).toBeVisible();
 
       const footerOffset = await page.locator('footer').evaluate(
         /** Measures the footer against the viewport after entering the full-page layout. */
@@ -38,7 +99,7 @@ for (const width of [375, 768, 1280]) {
       }
       await page.getByRole('button', { name: 'Switch to dark mode' }).click();
       await expect(page.locator('html')).toHaveClass(/\bdark\b/);
-      await expect(page.getByText('Showing 1–2 of 6')).toBeVisible();
+      await expect(page.getByText('Showing 1–6 of 6')).toBeVisible();
     },
   );
 }

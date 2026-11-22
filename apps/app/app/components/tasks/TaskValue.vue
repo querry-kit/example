@@ -1,5 +1,12 @@
 <template>
-  <UBadge v-if="appearance" variant="subtle" :color="appearance.color" :icon="appearance.icon" :label="String(value)" />
+  <UBadge
+    v-if="appearance"
+    class="whitespace-nowrap"
+    variant="subtle"
+    :color="appearance.color"
+    :icon="appearance.icon"
+    :label="String(value)"
+  />
   <template v-else-if="value != null">
     {{ field === 'internalCostCents' ? `${value} ¢` : value }}
   </template>
