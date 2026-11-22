@@ -31,6 +31,92 @@ function headerGeometry(cells: Element[]): number[][] {
 }
 
 test(
+  'keeps status badges and counts on one line and group checkboxes visible on hover',
+  /** Covers the longest status and the unchecked control against the hovered row in both themes. */
+  async ({ page }) => {
+    await page.setViewportSize({ width: 1030, height: 1273 });
+    await page.goto('/tasks');
+    await groupByStatus(page);
+    const toggle = page.getByRole('button', { name: /^IN_PROGRESS \d+ items$/ });
+    const checkbox = page.getByRole('checkbox', { name: /^Select group IN_PROGRESS \d+ items$/ });
+    for (const colorScheme of ['dark', 'light'] as const) {
+      await page.emulateMedia({ colorScheme });
+      await toggle.hover();
+      await expect(checkbox).not.toBeChecked();
+      const visibleRing = await checkbox.evaluate(
+        /** Compares the painted inset ring with the sticky cell it sits on. */ (control) => {
+          const style = getComputedStyle(control);
+          return (
+            style.boxShadow.includes(style.color) &&
+            style.color !== getComputedStyle(control.closest('td')!).backgroundColor
+          );
+        },
+      );
+      expect(visibleRing).toBe(true);
+      const label = toggle.locator('[data-slot="label"]');
+      const count = toggle.locator(':scope > span:last-child');
+      const box = await label.boundingBox();
+      const total = await count.boundingBox();
+      expect(box!.height).toBeLessThanOrEqual(
+        await label.evaluate(
+          /** A single-line label is at most one line high. */ (el) => parseFloat(getComputedStyle(el).lineHeight),
+        ),
+      );
+      expect(Math.abs(box!.y + box!.height / 2 - total!.y - total!.height / 2)).toBeLessThan(2);
+    }
+  },
+);
+
+test(
+  'pins both grouping levels from sm and scrolls them normally on mobile',
+  /** Checks sticky geometry and the live breakpoint change without resetting grouping. */
+  async ({ page }) => {
+    await page.setViewportSize({ width: 640, height: 850 });
+    await page.goto('/tasks');
+    await groupByStatus(page);
+    const groupBy = page.getByRole('button', { name: 'Group by', exact: true });
+    await groupBy.click();
+    await page.getByRole('combobox', { name: 'Select grouping field' }).click();
+    await page.getByRole('option', { name: 'Priority', exact: true }).click();
+    await page.getByRole('button', { name: 'Add grouping' }).click();
+    await page.keyboard.press('Escape');
+    const viewport = page.getByRole('region', { name: 'Tasks table' });
+    const toggle = viewport.getByRole('button', { name: /^IN_PROGRESS \d+ items$/ });
+    await toggle.click();
+    const pinned = viewport.locator('th[data-pinned="left"]');
+    await expect(pinned).toHaveCount(3);
+    const before = await pinned.evaluateAll(headerGeometry);
+    const initial = await toggle.boundingBox();
+    await viewport.evaluate(
+      /** Scrolls the table beyond both grouped columns. */ (el) => {
+        el.scrollLeft = el.scrollWidth;
+      },
+    );
+    expect(
+      await viewport.evaluate(/** Confirms horizontal overflow was exercised. */ (el) => el.scrollLeft),
+    ).toBeGreaterThan(100);
+    expect(await pinned.evaluateAll(headerGeometry)).toEqual(before);
+    expect((await toggle.boundingBox())?.x).toBe(initial?.x);
+    await page.setViewportSize({ width: 375, height: 850 });
+    await expect(pinned).toHaveCount(1);
+    await expect(pinned.getByRole('checkbox', { name: 'Select visible tasks' })).toBeVisible();
+    await expect(toggle).not.toBeInViewport();
+    await page.setViewportSize({ width: 640, height: 850 });
+    await expect(pinned).toHaveCount(3);
+    await expect(toggle).toBeInViewport();
+    expect(
+      await toggle.evaluate(
+        /** Checks that no part of the disclosure is clipped. */ (button) =>
+          [...button.querySelectorAll<HTMLElement>('span')].every(
+            /** Compares content and available inline space. */ (el) =>
+              !el.clientWidth || el.scrollWidth <= el.clientWidth + 1,
+          ),
+      ),
+    ).toBe(true);
+  },
+);
+
+test(
   'expands and collapses all nested groups from the footer',
   /** Exercises bulk disclosure, its persisted state and the footer positions. */
   async ({ page }) => {
@@ -45,11 +131,7 @@ test(
 
     const expand = page.getByRole('button', { name: 'Expand all groups', exact: true });
     const collapse = page.getByRole('button', { name: 'Collapse all groups', exact: true });
-    const effort = page.getByRole('switch', { name: 'Show effort metrics' });
     await expect(expand).toBeEnabled();
-    const expandPosition = await expand.boundingBox();
-    const effortPosition = await effort.boundingBox();
-    expect(expandPosition?.x).toBeLessThan(effortPosition?.x ?? 0);
 
     const table = page.getByRole('table');
     const headers = table.getByRole('columnheader');
@@ -133,6 +215,8 @@ test(
   async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 850 });
     await page.goto('/tasks');
+    await page.locator('footer').getByRole('combobox').click();
+    await page.getByRole('option', { name: '2', exact: true }).click();
     const nextTaskPage = page.getByRole('button', { name: 'Next page' });
     await expect(nextTaskPage).toBeVisible();
     const regularButton = await nextTaskPage.boundingBox();
@@ -146,7 +230,7 @@ test(
     const next = viewport.getByRole('button', { name: 'Next page' });
     await expect(next).toBeInViewport();
     const groupedButton = await next.boundingBox();
-    expect(groupedButton?.height).toBeLessThan(regularButton?.height ?? 0);
+    expect(groupedButton?.height).toBe(regularButton?.height);
     await viewport.evaluate(
       /** Scrolls the columns independently of the pagination. */ (element) => {
         element.scrollLeft = element.scrollWidth;
@@ -192,8 +276,8 @@ test(
 );
 
 test(
-  'loads groups and leaf pages lazily, with optional metrics for the whole filtered branch',
-  /** Compares visible rows, group counts and metric totals against PostgreSQL fixtures. */
+  'loads groups and leaf pages lazily with scoped group totals',
+  /** Compares visible rows and group counts against PostgreSQL fixtures. */
   async ({ page }) => {
     let metricRequests = 0;
     page.on(
@@ -234,7 +318,9 @@ test(
     };
     page.on('request', captureRead);
     await selectOpen.click();
-    await expect(page.getByRole('button', { name: 'Delete selected (2)' })).toBeVisible();
+    const selection = page.getByRole('toolbar', { name: 'Selection' });
+    await expect(selection.getByRole('status')).toHaveText('2 selected');
+    await expect(selection.getByRole('button', { name: 'Delete selected' })).toBeVisible();
     await expect(selectOpen).toBeChecked();
     page.off('request', captureRead);
     expect(selectionReads).toEqual([]);
@@ -246,14 +332,10 @@ test(
     await selectOpen.click();
     await expect(table.getByRole('checkbox', { name: 'Select Sketch an empty state' })).not.toBeChecked();
 
-    await page.getByRole('switch', { name: 'Infinite scroll', exact: true }).click();
+    await page.getByRole('button', { name: 'Infinite scroll', exact: true }).click();
     await expect(table.getByRole('link', { name: 'Open Review navigation labels' })).toBeVisible();
     await expect(table.getByRole('link', { name: 'Open Sketch an empty state' })).toBeVisible();
 
-    await page.getByRole('switch', { name: 'Show effort metrics' }).click();
-    await expect(table.getByText('Total', { exact: true }).locator('..')).toContainText('8');
-    await expect(table.getByText('Average', { exact: true }).locator('..')).toContainText('4');
-    expect(metricRequests).toBe(1);
     const filters = await openTaskFilters(page);
     const project = await addProjectFilter(filters);
     await project.click();
@@ -263,14 +345,12 @@ test(
     const filtered = page.getByRole('button', { name: 'OPEN 1 items', exact: true });
     await expect(table.getByRole('row').filter({ has: filtered }).getByLabel('Total estimated hours')).toHaveText('6');
     await expect(filtered).toHaveAttribute('aria-expanded', 'true');
-    await expect(table.getByText('Total', { exact: true }).locator('..')).toContainText('6');
 
     await selectAccount(page, 'user2');
     await groupByStatus(page);
     await open.click();
-    await expect(table.getByText('Total', { exact: true })).toHaveCount(0);
-    await page.getByRole('switch', { name: 'Show effort metrics' }).click();
-    await expect(table.getByText('Total', { exact: true }).locator('..')).toContainText('12');
+    await expect(table.getByRole('row').filter({ has: open }).getByLabel('Total estimated hours')).toHaveText('12');
+    expect(metricRequests).toBe(0);
   },
 );
 

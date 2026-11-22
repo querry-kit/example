@@ -13,6 +13,7 @@
           <UColorModeButton />
         </template>
       </UDashboardNavbar>
+      <WorkboardToolbarLayout v-if="breadcrumbs?.length" :breadcrumbs="breadcrumbs" />
       <slot name="toolbar" />
     </template>
 
@@ -27,6 +28,10 @@
 </template>
 
 <script setup lang="ts">
-withDefaults(defineProps<{ title: string; fullPage?: boolean; heading?: boolean }>(), { heading: true });
+import type { BreadcrumbItem } from '@nuxt/ui';
+
+withDefaults(defineProps<{ title: string; fullPage?: boolean; heading?: boolean; breadcrumbs?: BreadcrumbItem[] }>(), {
+  heading: true,
+});
 const { session, switching, select } = useDemoSession();
 </script>

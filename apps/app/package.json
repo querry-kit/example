@@ -11,7 +11,7 @@
     "test:grouping": "playwright test --config playwright.config.ts grouped-tasks.spec.ts"
   },
   "dependencies": {
-    "@iconify-json/lucide": "1.2.157",
+    "@iconify-json/lucide": "1.2.158",
     "@iconify-json/tabler": "1.2.46",
     "@nuxt/ui": "4.13.0",
     "@querry-kit/nuxt": "workspace:*",
@@ -21,7 +21,7 @@
     "@workboard/contracts": "workspace:*",
     "h3": "1.15.11",
     "nuxt": "4.6.4",
-    "vue": "3.5.45",
+    "vue": "3.5.46",
     "vue-router": "5.5.1"
   },
   "devDependencies": {

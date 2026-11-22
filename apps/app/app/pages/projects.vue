@@ -9,41 +9,47 @@
         v-model:invisible-columns="invisibleColumns"
         v-model:column-pinning="columnPinning"
         search-placeholder="Search projects"
+        :selected-count="canManage ? selectedIds.size : 0"
         :filter-fields="filterFields"
         :sortable-fields="sortableFields"
         :column-definitions="availableColumns"
       >
-        <template v-if="canManage" #new>
+        <template #layout="{ search: searchControl, options, actions }">
+          <WorkboardToolbarLayout
+            :breadcrumbs="[{ label: 'Projects' }]"
+            :actions="actions"
+            :search="searchControl"
+            :options="options"
+          />
+        </template>
+        <template v-if="canManage" #bulk-actions>
           <WorkboardDeleteDialog
-            v-if="selectedIds.size || deleteOpen"
             v-model:open="deleteOpen"
             title="Delete selected projects"
             :description="`Permanently delete ${selectedIds.size} selected ${selectedIds.size === 1 ? 'project' : 'projects'}? Each project must have no tasks.`"
             :remove="deleteSelected"
             @deleted="refreshAfterDelete"
           >
-            <UButton
-              color="error"
-              variant="outline"
-              icon="i-tabler-trash"
-              :label="`Delete selected (${selectedIds.size})`"
-            />
+            <UButton color="error" variant="outline" icon="i-tabler-trash" label="Delete selected" />
           </WorkboardDeleteDialog>
+        </template>
+        <template v-if="canManage" #new>
           <ProjectEditor @saved="refreshProjects">
-            <UButton icon="i-tabler-plus" label="New project" />
+            <WorkboardNewButton label="New project" />
           </ProjectEditor>
         </template>
       </QTableToolbar>
     </template>
 
-    <UAlert
-      v-if="error"
-      class="m-4"
-      color="error"
-      variant="soft"
-      title="Could not load projects"
-      :actions="[{ label: 'Retry', onClick: () => refresh() }]"
-    />
+    <UDashboardToolbar v-if="error" class="min-w-0 py-3">
+      <UAlert
+        class="min-w-0"
+        color="error"
+        variant="soft"
+        title="Could not load projects"
+        :actions="[{ label: 'Retry', onClick: () => refresh() }]"
+      />
+    </UDashboardToolbar>
     <UTable
       v-else
       sticky
@@ -89,7 +95,7 @@
         v-model:items-per-page="itemsPerPage"
         :total-items="data?.meta.itemCount ?? 0"
       >
-        <template #left="{ start, end, totalItems }">
+        <template #summary="{ start, end, totalItems }">
           <p class="text-sm text-muted tabular-nums" aria-live="polite">
             Showing {{ start }}–{{ end }} of {{ totalItems }}
           </p>

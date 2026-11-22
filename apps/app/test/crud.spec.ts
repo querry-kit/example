@@ -32,7 +32,9 @@ test(
     await page.getByRole('button', { name: 'Add grouping' }).click();
     await groupBy.click();
     await page.getByRole('checkbox', { name: 'Select group DONE 2 items', exact: true }).click();
-    await page.getByRole('button', { name: 'Delete selected (2)', exact: true }).click();
+    const selection = page.getByRole('toolbar', { name: 'Selection' });
+    await expect(selection.getByRole('status')).toHaveText('2 selected');
+    await selection.getByRole('button', { name: 'Delete selected', exact: true }).click();
     const request = page.waitForRequest(
       /** Captures the grouped deletion submitted by the confirmation dialog. */ (pending) =>
         pending.method() === 'POST' && new URL(pending.url()).pathname === '/api/tasks/bulk-delete',
@@ -75,7 +77,9 @@ test(
     await second.click();
     await occupied.click();
     await expect(header).toHaveAttribute('aria-checked', 'mixed');
-    await page.getByRole('button', { name: 'Delete selected (3)', exact: true }).click();
+    const selection = page.getByRole('toolbar', { name: 'Selection' });
+    await expect(selection.getByRole('status')).toHaveText('3 selected');
+    await selection.getByRole('button', { name: 'Delete selected', exact: true }).click();
     const dialog = page.getByRole('dialog', { name: 'Delete selected projects', exact: true });
     await dialog.getByRole('button', { name: 'Delete', exact: true }).click();
     await expect(dialog.getByRole('alert')).toContainText('Move or delete the tasks');
@@ -83,7 +87,8 @@ test(
     await expect(first).toBeChecked();
     await expect(second).toBeChecked();
     await occupied.click();
-    await page.getByRole('button', { name: 'Delete selected (2)', exact: true }).click();
+    await expect(selection.getByRole('status')).toHaveText('2 selected');
+    await selection.getByRole('button', { name: 'Delete selected', exact: true }).click();
     await dialog.getByRole('button', { name: 'Delete', exact: true }).click();
     await expect(first).toHaveCount(0);
     await expect(second).toHaveCount(0);
@@ -113,6 +118,8 @@ test(
     }
 
     await page.goto(`/tasks?project=${project.id}`);
+    await page.locator('footer').getByRole('combobox').click();
+    await page.getByRole('option', { name: '2', exact: true }).click();
     const table = page.getByRole('table');
     await table.getByRole('button', { name: 'Title', exact: true }).click();
     const selectPage = table.getByRole('checkbox', { name: 'Select visible tasks' });
@@ -123,7 +130,9 @@ test(
     await expect(selectPage).not.toBeChecked();
     await selectPage.click();
     await expect(selectPage).toBeChecked();
-    const bulk = page.getByRole('button', { name: 'Delete selected (2)', exact: true });
+    const selection = page.getByRole('toolbar', { name: 'Selection' });
+    await expect(selection.getByRole('status')).toHaveText('2 selected');
+    const bulk = selection.getByRole('button', { name: 'Delete selected', exact: true });
     await bulk.click();
     const dialog = page.getByRole('dialog', { name: 'Delete selected tasks' });
     await expect(dialog.getByText('Permanently delete 2 selected tasks?')).toBeVisible();
