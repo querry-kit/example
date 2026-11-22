@@ -1,5 +1,7 @@
 # Querry Kit Workboard
 
+> **This repository has moved.** Source, issues and pull requests are now maintained in the [Querry Kit monorepo](https://github.com/querry-kit/querry-kit/tree/main/examples/workboard). This repository is retained for historical links and releases.
+
 A reference workspace for a NestJS/Fastify API and Nuxt 4 dashboard using Querry Kit. It uses a shared Zod contracts package.
 
 ## Try the standalone demo
